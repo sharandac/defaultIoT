@@ -3,3 +3,8 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
+defaultIoT.bin
+defaultIoT.spiffs.bin
+gen_firmaware.sh
+update_formware.sh
+update_spiffs.sg
