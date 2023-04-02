@@ -60,7 +60,7 @@ The following modules are implemented:
 * [servo](src/modules/servo/README.md)
 * [pwm](src/modules/pwm/README.md)
 * [output](src/modules/output/README.md)
-* [oneWire](src/modules/oneWire/README.md)
+* [oneWire](src/modules/1wire/README.md)
 * [vindriktning](src/modules/vindriktning/README.md)
 
 # Contributors
