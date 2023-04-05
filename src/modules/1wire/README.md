@@ -15,6 +15,50 @@
 
 # mqtt interface
 
+## mqtt stat
+
+```Json
+{
+  "id": "sensor",
+  "ip": "192.168.2.34",
+  "time": "2023-04-03 11:30.22",
+  "uptime": 154981,
+  "version": "2023033001; firmware: Apr  1 2023 15:49:17; GCC-Version: 5.2.0",
+  "reset_reason": "ESP_RST_SW",
+  "reset_time": "2023-04-01 16:27.23",
+  "interval": 15,
+  "sensor": [
+    {
+      "addr": "21:12:a9:6e:e3:28",
+      "temp": 33.1875,
+      "temp_str": "33.19°C"
+    },
+    {
+      "addr": "21:12:b1:02:13:28",
+      "temp": 18.5625,
+      "temp_str": "18.56°C"
+    }
+  ]
+}
 ```
 
-```
+## mqtt cmnd
+
+Not available
+
+## mqtt tele
+
+On each connect to a mqtt server a telemetry information is send like this:
+
+```json
+{
+  "id": "sensor",
+  "ip": "192.168.2.34",
+  "time": "2023-04-03 11:23.55",
+  "uptime": 1,
+  "reset_reason": "ESP_RST_SW",
+  "reset_time": "2023-04-03 11:23.54",
+  "mac": "24:62:AB:F6:2C:A8",
+  "channel": 10,
+  "ssid": "karlshorst_BGN",
+  "rssi": -60
