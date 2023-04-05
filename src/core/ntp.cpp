@@ -13,12 +13,14 @@
 #include <esp_task_wdt.h>
 #include <time.h>
 
-#include "ntp.h"
+#include "core.h"
 #include "webserver.h"
 #include "config.h"
-#include "config/ntp_config.h"
 #include "core/utils/alloc.h"
 #include "core/utils/callback.h"
+
+#include "ntp.h"
+#include "config/ntp_config.h"
 /**
  * module namespace
  */
@@ -26,17 +28,24 @@
 /**
  * local variables
  */
-TaskHandle_t _NTP_Task;                 /** @brief handle for ntp task */
+TaskHandle_t _Task;                 /** @brief handle for ntp task */
 ntp_config_t ntp_config;                /** @brief ntp config */
-callback_t *ntp_callback = NULL;        /** @brief callback function for ntp */
 /**
  * local static funtions
  */
-static void ntp_Task( void * pvParameters );
-static bool ntp_webserver_cb( EventBits_t event, void *arg );
-static void ntp_send_sb( EventBits_t event, void *arg );
+static void registration( void );
+static void Task( void * pvParameters );
+static bool webserver_cb( EventBits_t event, void *arg );
+/**
+ * @brief setup function for ntp, called by core autocall function
+ */
+static int registed = core_autocall_function( &registration, 0 );           /** @brief module autocall function */
 
-void ntp_StartTask( void ) {  
+static void registration( void ) {  
+    /**
+     * check if already registered
+     */
+    ASSERT( registed, MODULE_NAME " setup is called without module registration, check your code [%d]", registed );
     /**
      * load ntp config
      */
@@ -44,20 +53,18 @@ void ntp_StartTask( void ) {
     /**
      * register webserver callback function
      */
-    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, ntp_webserver_cb, "/" MODULE_NAME ".htm", CALL_CB_CORE ); 
-    asyncwebserver_set_cb_active( ntp_webserver_cb, true );
+    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/" MODULE_NAME ".htm", CALL_CB_CORE ); 
+    asyncwebserver_set_cb_active( webserver_cb, true );
     /**
      * start ntp task
      */
-    xTaskCreatePinnedToCore(    ntp_Task,           /* Function to implement the task */
+    xTaskCreatePinnedToCore(    Task,               /* Function to implement the task */
                                 MODULE_NAME " Task",/* Name of the task */
                                 2500,               /* Stack size in words */
                                 NULL,               /* Task input parameter */
                                 1,                  /* Priority of the task */
-                                &_NTP_Task,         /* Task handle. */
+                                &_Task,         /* Task handle. */
                                 1 );                /* Core where the task should run */   
-
-    vTaskDelay( 250 / portTICK_PERIOD_MS );
 }
 
 /**
@@ -65,7 +72,7 @@ void ntp_StartTask( void ) {
  * 
  * @param pvParameters 
  */
-static void ntp_Task( void * pvParameters ) {
+static void Task( void * pvParameters ) {
     struct tm info;                         /** @brief current time */
     char time_str[32] = "";                 /** @brief current time string */
     static uint64_t NextMillis = millis();  /** @brief next update time */
@@ -75,10 +82,6 @@ static void ntp_Task( void * pvParameters ) {
      * wait for wifi
      */
     while( !WiFi.isConnected() ){};
-    /**
-     * send ntp started event
-     */
-    ntp_send_sb( NTP_START, NULL );
     /**
      * add watchdog
      */
@@ -109,7 +112,6 @@ static void ntp_Task( void * pvParameters ) {
                  */
                 if( getLocalTime( &info ) ) {
                     NextMillis = millis() + NTP_RENEW_INTERVAL * 1000l;
-                    ntp_send_sb( NTP_SYNC, NULL );
                     strftime( time_str, sizeof( time_str ), "%Y-%m-%d %H:%M.%S", &info );
                     log_i("NTP-client: time is %s", time_str );
                 }
@@ -126,29 +128,6 @@ static void ntp_Task( void * pvParameters ) {
 }
 
 /**
- * @brief register a callback function for a event
- * 
- * @param event             event mask
- * @param callback_func     pointer to the callback function
- * @param id                id of the callback function
- * @return true 
- * @return false 
- */
-bool ntp_register_cb( EventBits_t event, CALLBACK_FUNC callback_func, const char *id ) {
-    if ( ntp_callback == NULL ) {
-        ntp_callback = callback_init( MODULE_NAME " client" );
-        ASSERT( ntp_callback, MODULE_NAME " client callback alloc failed" );
-    }    
-    return( callback_register( ntp_callback, event, callback_func, id ) );
-}
-
-static void ntp_send_sb( EventBits_t event, void *arg ) {
-    if( ntp_callback ) {
-        callback_send( ntp_callback, event, arg );
-    }
-}
-
-/**
  * @brief webserver callback for index.htm
  * 
  * @param event     event bitmask
@@ -156,7 +135,7 @@ static void ntp_send_sb( EventBits_t event, void *arg ) {
  * @return true 
  * @return false 
  */
-static bool ntp_webserver_cb( EventBits_t event, void *arg ) {
+static bool webserver_cb( EventBits_t event, void *arg ) {
     bool retval = false;
     wsData_t *ws_data = (wsData_t *)arg;
     AsyncWebSocketClient * client = ws_data->client;
@@ -176,7 +155,6 @@ static bool ntp_webserver_cb( EventBits_t event, void *arg ) {
             if ( !strcmp( "save_" MODULE_NAME "_settings", cmd ) ) {
                 ntp_config.save();
                 asyncwebserver_send_websocket_msg( "status\\Save" );
-                ntp_send_sb( NTP_CONFIG_CHANGE, NULL );
             }
             else if ( !strcmp("get_" MODULE_NAME "_settings", cmd ) ) {
                 asyncwebserver_send_websocket_msg( MODULE_NAME "_server\\%s", ntp_config.server );

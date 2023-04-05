@@ -13,10 +13,16 @@
 #include <esp_wifi.h>
 #include <esp_task_wdt.h>
 
-#include "wificlient.h"
+#include "core.h"
 #include "webserver.h"
-#include "config/wifi_config.h"
 #include "core/utils/alloc.h"
+
+#include "wificlient.h"
+#include "config/wifi_config.h"
+/**
+ * analog module namespace
+ */
+#define MODULE_NAME                "wificlient"
 /**
  * local variables
  */
@@ -25,13 +31,22 @@ TaskHandle_t _wificlient_Task;              /** @brief wifi task handle */
 /**
  * local static functions
  */
+static void registration( void );
 static bool webserver_cb( EventBits_t event, void *arg );
 static bool update_webserver_cb( EventBits_t event, void *arg );
 static bool info_webserver_cb( EventBits_t event, void *arg );
 static void start_softAP( void );
-static void wificlient_Task( void * pvParameters );
+static void Task( void * pvParameters );
+/**
+ * @brief setup function for wificlient, called by core autocall function
+ */
+static int registed = core_autocall_function( &registration, 0 );           /** @brief module autocall function */
 
-void wificlient_startTask( void ) {
+static void registration( void ) {
+    /**
+     * check if already registered
+     */
+    ASSERT( registed, MODULE_NAME " setup is called without module registration, check your code [%d]", registed );
     /**
      * load wifi config
      */
@@ -74,7 +89,7 @@ void wificlient_startTask( void ) {
     /**
      * start wifi client task
      */
-    xTaskCreatePinnedToCore(    wificlient_Task,        /* Function to implement the task */
+    xTaskCreatePinnedToCore(    Task,                   /* Function to implement the task */
                                 "mqttclient Task",      /* Name of the task */
                                 5000,                   /* Stack size in words */
                                 NULL,                   /* Task input parameter */
@@ -90,7 +105,7 @@ void wificlient_startTask( void ) {
  * 
  * @param pvParameters 
  */
-static void wificlient_Task( void * pvParameters ) {
+static void Task( void * pvParameters ) {
     log_i( "Start Wifi-Client on Core: %d", xPortGetCoreID() );
     /**
      * add task to watchdog
@@ -157,7 +172,7 @@ static bool info_webserver_cb( EventBits_t event, void *arg ) {
      */
     switch( event ) {
         case WEB_DATA:
-            ASSERT( request, "request is NULL, check your code!");
+            ASSERT( request, MODULE_NAME " request is NULL, check your code!");
             /**
              * html page and send it
              */
@@ -194,7 +209,7 @@ static bool update_webserver_cb( EventBits_t event, void *arg ) {
      */
     switch( event ) {
         case WEB_DATA:
-            ASSERT( request, "request is NULL, check your code!");
+            ASSERT( request, MODULE_NAME " request is NULL, check your code!");
             /**
              * html page and send it
              */
@@ -234,7 +249,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
      */
     switch( event ) {
         case WS_DATA:
-            ASSERT( client, "client is NULL, check your code!");
+            ASSERT( client, MODULE_NAME " client is NULL, check your code!");
             /**
              * check all commands
              */
@@ -301,7 +316,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             retval = true;
             break;
         case WEB_DATA:
-            ASSERT( request, "request is NULL, check your code!");
+            ASSERT( request, MODULE_NAME " request is NULL, check your code!");
             /**
              * html page and send it
              */

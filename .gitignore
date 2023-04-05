@@ -5,6 +5,6 @@
 .vscode/ipch
 defaultIoT.bin
 defaultIoT.spiffs.bin
-gen_firmaware.sh
-update_formware.sh
-update_spiffs.sg
+gen_firmware.sh
+update_firmware.sh
+update_spiffs.sh

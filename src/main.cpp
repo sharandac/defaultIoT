@@ -10,8 +10,6 @@
  */
 #include <Arduino.h>
 #include <esp_task_wdt.h>
-#include "SPIFFS.h"
-#include "core/utils/callback.h"
 /**
  * include all core modules
  */
@@ -21,32 +19,16 @@
 
 void setup() {
     /**
-     * start serial
+     * start core services with own task
      */
-    Serial.begin( 115200 );
-    log_i("start %s", DEVICE_NAME );
-    /**
-     * mount SPIFFS
-     */
-    if ( !SPIFFS.begin() ) {        
-        /*
-         * format SPIFFS if not aviable
-         */
-        SPIFFS.format();
-        log_i("formating SPIFFS");
-    }  
+    core_setup();
     /**
      * module registration
      */
     module_mgmt_call_setup();
     /**
-     * start core services with own task
-     */
-    core_setup();
-    /**
      * start all modules dependent on the configuration
      */
-    vTaskDelay( 1000 / portTICK_PERIOD_MS );
     module_mgmt_call_init();
 }
 

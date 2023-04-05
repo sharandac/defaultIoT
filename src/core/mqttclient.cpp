@@ -14,14 +14,15 @@
 #include <soc/rtc.h>
 #include <esp_task_wdt.h>
 
-#include "config/mqtt_config.h"
-
+#include "core.h"
 #include "config.h"
 #include "core/utils/alloc.h"
-#include "mqttclient.h"
 #include "wificlient.h"
 #include "webserver.h"
 #include "ntp.h"
+
+#include "mqttclient.h"
+#include "config/mqtt_config.h"
 /**
  * module namespace
  */
@@ -46,8 +47,39 @@ char reset_time[64]="";                         /** @brief reset time */
 /**
  * local static funtions
  */
+static void registration( void );
 static bool webserver_cb( EventBits_t event, void *arg );
 static void Task( void * pvParameters );
+/**
+ * @brief setup function for mqttclient, called by core autocall function
+ */
+static int registed = core_autocall_function( &registration, 3);           /** @brief module autocall function */
+/**
+ * @brief registration funtion
+ */
+static void registration( void ) {
+    /**
+     * check if already registered
+     */
+    ASSERT( registed, MODULE_NAME " setup is called without module registration, check your code [%d]", registed );
+    /**
+     * register callback function
+     */
+    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/" MODULE_NAME "client.htm", CALL_CB_CORE );
+    asyncwebserver_set_cb_active( webserver_cb, true );
+    /**
+     * create mqtt client task
+     */
+    xTaskCreatePinnedToCore(    Task,                   /* Function to implement the task */
+                                "mqttclient Task",      /* Name of the task */
+                                16000,                  /* Stack size in words */
+                                NULL,                   /* Task input parameter */
+                                1,                      /* Priority of the task */
+                                &_ASYNCMQTT_Task,       /* Task handle. */
+                                1 );                    /* Core where the task should run */
+
+    vTaskDelay( 250 / portTICK_PERIOD_MS );
+}
 
 static void onMqttConnect(bool sessionPresent) {
     time_t now;
@@ -395,26 +427,6 @@ static void Task( void * pvParameters ) {
         esp_task_wdt_reset();
         vTaskDelay( 1 );
     }
-}
-
-void mqtt_client_StartTask( void ) {
-    /**
-     * register callback function
-     */
-    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/" MODULE_NAME "client.htm", CALL_CB_CORE );
-    asyncwebserver_set_cb_active( webserver_cb, true );
-    /**
-     * create mqtt client task
-     */
-    xTaskCreatePinnedToCore(    Task,                   /* Function to implement the task */
-                                "mqttclient Task",      /* Name of the task */
-                                16000,                  /* Stack size in words */
-                                NULL,                   /* Task input parameter */
-                                1,                      /* Priority of the task */
-                                &_ASYNCMQTT_Task,       /* Task handle. */
-                                1 );                    /* Core where the task should run */
-
-    vTaskDelay( 250 / portTICK_PERIOD_MS );
 }
 
 /**

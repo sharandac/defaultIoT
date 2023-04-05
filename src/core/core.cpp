@@ -14,18 +14,14 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include <esp_task_wdt.h>
+#include "SPIFFS.h"
+
 #include "config.h"
-#include "core/webserver.h"
-#include "core/mqttclient.h"
-#include "core/modul_mgmt.h"
+#include "webserver.h"
 #include "core/utils/alloc.h"
+#include "core/utils/callback.h"
 
 #include "core.h"
-#include "core/ntp.h"
-#include "core/modul_mgmt.h"
-#include "core/mqttclient.h"
-#include "core/webserver.h"
-#include "core/wificlient.h"
 #include "config/core_config.h"
 /**
  * module namespace
@@ -50,7 +46,7 @@ static bool webserver_cb( EventBits_t event, void *arg );
  * @param prio          priority of the function, 0 first, 1 second, ...
  * @return int 
  */
-int core_autocall_function( MODULE_AUTOCALL_FUNC function, size_t prio ) {
+int core_autocall_function( CORE_AUTOCALL_FUNC function, size_t prio ) {
     /**
      * register a setup function
      */
@@ -77,6 +73,21 @@ void core_setup( void ) {
      */
     ASSERT( !initialized, MODULE_NAME " are not deinitialized, check your code" );
     /**
+     * start serial
+     */
+    Serial.begin( 115200 );
+    log_i( MODULE_NAME " start %s", DEVICE_NAME );
+    /**
+     * mount SPIFFS
+     */
+    if ( !SPIFFS.begin() ) {        
+        /*
+         * format SPIFFS if not aviable
+         */
+        SPIFFS.format();
+        log_i( MODULE_NAME " formating SPIFFS");
+    }  
+    /**
      * load config
      */
     core_config.load();
@@ -101,7 +112,7 @@ void core_setup( void ) {
      */
     if( !core_config.brownout_detection ) {
         WRITE_PERI_REG( RTC_CNTL_BROWN_OUT_REG, 0 );
-        log_i("brown out detection disabled");
+        log_i( MODULE_NAME " brown out detection disabled");
     }
     /**
      * set frequency scaling if enabled
@@ -112,16 +123,29 @@ void core_setup( void ) {
             pm_config.min_freq_mhz = 80;
             pm_config.light_sleep_enable = core_config.light_sleep ? true : false ;
             ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
-            log_i("custom arduino-esp32 framework detected, enable PM/DFS support, %d/80MHz with light sleep %s", core_config.frequency, core_config.light_sleep ? "enabled" : "disabled" );
+            log_i( MODULE_NAME "custom arduino-esp32 framework detected, enable PM/DFS support, %d/80MHz with light sleep %s", core_config.frequency, core_config.light_sleep ? "enabled" : "disabled" );
         }
     #endif
     /**
      * start core servies
      */
-    wificlient_startTask();
-    ntp_StartTask();
-    mqtt_client_StartTask();
-    asyncwebserver_StartTask();
+    if( core_autocall_counter && core_autocall_table ) {
+        /**
+         * call all registered setup functions
+         */
+        for( size_t prio = 0 ; prio < 16 ; prio++ ) {
+            for( size_t i = 0 ; i < core_autocall_counter ; i++ ) {
+                if( core_autocall_table[ i ].prio == prio )
+                    core_autocall_table[ i ].function();
+            }
+        }
+        /**
+         * free the table
+         */
+        core_autocall_counter = 0;
+        free( core_autocall_table );
+        core_autocall_table = NULL;
+    }
     /**
      * set initialized flag
      */

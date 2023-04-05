@@ -27,7 +27,7 @@
     /**
      * @brief autocall function for setup all modules
      */
-    int core_autocall_function( MODULE_AUTOCALL_FUNC function, size_t prio );
+    int core_autocall_function( CORE_AUTOCALL_FUNC function, size_t prio );
         /**
      * @brief core setup
      */

@@ -16,22 +16,8 @@
      */
     #define NTP_START               _BV(0)      /** @brief event mask for powermgm standby */
     #define NTP_SYNC                _BV(1)      /** @brief event mask for powermgm standby */
-    #define NTP_CONFIG_CHANGE       _BV(2)      /** @brief event mask for powermgm wakeup */  
+    #define NTP_CONFIG_CHANGE       _BV(2)      /** @brief event mask for powermgm wakeup */ 
     /**
-     * @brief start ntp task
-     */
-    void ntp_StartTask( void );
-    /**
-     * @brief register a callback function for a event
-     * 
-     * @param event             event mask
-     * @param callback_func     pointer to the callback function
-     * @param id                id of the callback function
-     * @return true 
-     * @return false 
-     */
-    bool ntp_register_cb( EventBits_t event, CALLBACK_FUNC callback_func, const char *id );
-      /**
      * @brief ntp config page
      */
     static const char ntp_config_page[] =

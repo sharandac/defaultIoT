@@ -14,3 +14,63 @@
 ![pwm interface](/images/pwm.png)
 
 # mqtt interface
+
+## mqtt stat
+
+```Json
+{
+  "id": "defaultIoT_d1fd28",
+  "ip": "192.168.2.26",
+  "time": "2023-04-05 19:53.40",
+  "uptime": 536,
+  "version": "2023033001; firmware: Apr  5 2023 19:27:16; GCC-Version: 5.2.0",
+  "reset_reason": "ESP_RST_POWERON",
+  "reset_time": "1970-01-01 00:00.00",
+  "interval": 5,
+  "pwm": {
+    "count": 1,
+    "pin": [
+      {
+        "pin": 17,
+        "value": 0,
+        "frequency": 8000,
+        "min": 0,
+        "max": 255
+      }
+    ]
+  }
+}
+```
+
+## mqtt cmnd
+
+```Json
+change pwm to 128 and check min/max
+{"pwm_channel":0,"value":128}
+
+change pwm frequency to 8000Hz
+{"pwm_channel":0,"frequency":8000}
+
+set pwm min value to 0
+{"pwm_channel":0,"min":0}
+
+set pwm min value to 255
+{"pwm_channel":0,"max":255}
+```
+
+## mqtt tele
+
+```Json
+{
+  "id": "sensor_f62ca8",
+  "ip": "192.168.2.85",
+  "time": "2023-04-03 11:23.55",
+  "uptime": 1,
+  "reset_reason": "ESP_RST_SW",
+  "reset_time": "2023-04-03 11:23.54",
+  "mac": "24:62:AB:F6:2C:A8",
+  "channel": 10,
+  "ssid": "karlshorst_BGN",
+  "rssi": -60
+}
+```

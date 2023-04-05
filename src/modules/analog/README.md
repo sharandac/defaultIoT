@@ -25,8 +25,6 @@ mqtt section
 
 * a checkbox which activates the status sending via mqtt. The interval is activated and set in the mqtt settings.
 
-Translated with www.DeepL.com/Translator (free version)
-
 # web interface
 
 ![analog interface](/images/analog.png)

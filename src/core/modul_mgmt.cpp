@@ -226,7 +226,7 @@ static void module_mgmt_init( void ) {
         /**
          * register webserver callback
          */
-        asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/" MODULE_NAME ".htm", CALL_CB_CORE );
+        asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/" MODULE_NAME ".htm", CALL_CB_MODUL );
         asyncwebserver_set_cb_active( webserver_cb, true );
         /**
          * set initialized
@@ -320,7 +320,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 html += "  <div class='vbox'>\n";
                 html += "    <label>" MODULE_NAME ": " + String( module_config.module[ i ].id ) + "</label><br>\n";
                 html += "    <div class='box'>\n";
-                html += "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_state' " + String( module_config.module[ i ].enaled ? "checked" : "" ) + "><label>enabled</label>\n";
+                html += "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_state' " + String( module_config.module[ i ].enaled ? "checked" : "" ) + "><label for=\"" MODULE_NAME "_" + String( i ) + "_state\">enabled</label>\n";
                 html += "    </div>\n";
                 html += "  </div>\n";
             }

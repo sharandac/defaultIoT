@@ -12,10 +12,6 @@
 
     #define WLAN_CONNECT_TIMEOUT    15      /* connection timeout */
     /**
-     * @brief wifi client init
-     */
-    void wificlient_startTask( void );
-    /**
      * @brief get the hostname
      * 
      * @return const char*

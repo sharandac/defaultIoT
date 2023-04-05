@@ -40,10 +40,6 @@
      */
     #define WEBSERVERPORT       80
     /**
-     * @brief webserver init function
-     */
-    void asyncwebserver_StartTask ( void );
-    /**
      * @brief register a callback function for a event
      * 
      * @param event             event mask

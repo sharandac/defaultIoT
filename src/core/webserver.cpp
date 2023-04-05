@@ -17,10 +17,15 @@
 #include <SPIFFSEditor.h>
 #include <esp_task_wdt.h>
 
+#include "core.h"
 #include "config.h"
 #include "core/utils/alloc.h"
 
 #include "webserver.h"
+/**
+ * analog module namespace
+ */
+#define MODULE_NAME                "webserver"
 /**
  * local variables
  */
@@ -29,13 +34,23 @@ AsyncWebSocket ws("/ws");                       /** @brief websocket on /ws */
 TaskHandle_t _WEBSERVER_Task;                   /** @brief handle for webserver task */
 callback_t *webwebser_callback = NULL;          /** @brief callback function for webserver */
 String cssmenu = "";                            /** @brief css menu */
+
+static void registration( void );
+/**
+ * @brief setup function for webserver, called by core autocall function
+ */
+static int registed = core_autocall_function( &registration, 1 );           /** @brief module autocall function */
 /*
  * local static functions
  */
 static void asyncwebserver_Task( void * pvParameters );
 static void asyncwebserver_setup(void);
 
-void asyncwebserver_StartTask ( void ) {
+static void registration ( void ) {
+    /**
+     * check if already registered
+     */
+    ASSERT( registed, MODULE_NAME " setup is called without module registration, check your code [%d]", registed );
     /**
      * start webserver task
      */

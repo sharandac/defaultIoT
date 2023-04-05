@@ -12,3 +12,33 @@
 # web interface
 
 # mqtt interface
+
+## mqtt stat
+
+```Json
+Not available
+```
+
+## mqtt cmnd
+
+```Json
+Not available
+```
+
+## mqtt tele
+
+```Json
+{
+  "id": "sensor_f62ca8",
+  "ip": "192.168.2.85",
+  "time": "2023-04-03 11:23.55",
+  "uptime": 1,
+  "reset_reason": "ESP_RST_SW",
+  "reset_time": "2023-04-03 11:23.54",
+  "mac": "24:62:AB:F6:2C:A8",
+  "channel": 10,
+  "ssid": "karlshorst_BGN",
+  "rssi": -60
+}
+```
+

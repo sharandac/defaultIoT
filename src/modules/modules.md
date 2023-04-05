@@ -243,7 +243,7 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
 ```
 After compiling, the module manager look like this:
 
-![module manager](/images/modulmanager.png)
+![module manager](/images/modulemanager.png)
 
 But remember, is this template a web or mqtt service is not implemented yet.
 

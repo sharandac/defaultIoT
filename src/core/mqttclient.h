@@ -37,14 +37,6 @@
         const char *msg = "";                       /** @brief pointer to the argument */
     } mqttData_t;
     /**
-     * @brief start mqtt client task
-     */
-    void mqtt_client_StartTask( void );
-    /**
-     * @brief store all mqtt client settings
-     */
-    void mqtt_client_save_settings( void );
-    /**
      * @brief send a mqtt message to a given topic
      * 
      * @param topic     pointer to the topic

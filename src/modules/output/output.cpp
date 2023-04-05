@@ -231,6 +231,7 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                 for( int i = 0 ; i < output_config.output_count && i < MAX_OUTPUTS; i++) {
                     doc[ MODULE_NAME ]["pin"][i]["pin"] = output_config.device[ i ].pin;
                     doc[ MODULE_NAME ]["pin"][ i ][ "state" ] = ( 1 << i ) & output_state ? true : false;
+                    doc[ MODULE_NAME ]["pin"][ i ][ "output" ] = ( 1 << i ) & output_state ? "ON" : "OFF";
                 }
             }
             retval = true;
@@ -243,17 +244,17 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
             /**
              * check output cmnd
              */
-            if( doc.containsKey( "set_" MODULE_NAME ) ) {
-                int pin = doc["set_" MODULE_NAME];
-                if( output_config.device[ pin ].enaled && pin < MAX_OUTPUTS && pin >= 0 ) {
-                    digitalWrite( output_config.device[ pin ].pin, HIGH );
+            if( doc.containsKey( "set_" MODULE_NAME "_channel" ) ) {
+                int channel = doc["set_" MODULE_NAME "_channel"];
+                if( output_config.device[ channel ].enaled && channel < MAX_OUTPUTS && channel >= 0 ) {
+                    digitalWrite( output_config.device[ channel ].pin, HIGH );
                 }
             }
 
-            if( doc.containsKey( "clear_" MODULE_NAME ) ) {
-                int pin = doc["clear_" MODULE_NAME ];
-                if( output_config.device[ pin ].enaled && pin < MAX_OUTPUTS && pin >= 0 ) {
-                    digitalWrite( output_config.device[ pin ].pin, LOW );
+            if( doc.containsKey( "clear_" MODULE_NAME "_channel" ) ) {
+                int channel = doc["clear_" MODULE_NAME "_channel" ];
+                if( output_config.device[ channel ].enaled && channel < MAX_OUTPUTS && channel >= 0 ) {
+                    digitalWrite( output_config.device[ channel ].pin, LOW );
                 }
             }
             retval = true;
