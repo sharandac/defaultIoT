@@ -9,7 +9,7 @@
 
 # defaultIoT
 
-Again and again, the wish came up that all the little helpers don't have to reinvent the wheel over and over again. Here is the appropriate completely overdone firmware.
+Again and again, the wish came up that all the little helpers don't have to reinvent the wheel over and over again. Here is the matching completely over-engineered firmware.
 It is neatly divided into modules that can be activated or deactivated individually. The configuration is also saved dutifully.
 So it is possible for all my little helpers always one and the same firmware to use and everything in one pass to update if necessary.
 
@@ -53,17 +53,19 @@ After that you can configure the defaultIoT under the following IP-address with 
 http://192.168.4.1
 ```
 
+![web interface](/images/core.png)
+
 # module
 
 The following modules are implemented:
 
+* [oneWire](src/modules/1wire/README.md)
 * [analog](src/modules/analog/README.md)
 * [input](src/modules/input/README.md)
-* [foernuftig](src/modules/foernuftig/README.md)
-* [servo](src/modules/servo/README.md)
-* [pwm](src/modules/pwm/README.md)
 * [output](src/modules/output/README.md)
-* [oneWire](src/modules/1wire/README.md)
+* [pwm](src/modules/pwm/README.md)
+* [servo](src/modules/servo/README.md)
+* [foernuftig](src/modules/foernuftig/README.md)
 * [vindriktning](src/modules/vindriktning/README.md)
 
 And for to ptogrammers, here is a small and easy to use template:
