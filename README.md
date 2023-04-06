@@ -9,7 +9,9 @@
 
 # defaultIoT
 
-Let's make the Ikea Vindriktning air quality sensor a little smarter. Here is the matching completely over-engineered firmware.
+Again and again, the wish came up that all the little helpers don't have to reinvent the wheel over and over again. Here is the appropriate completely overdone firmware.
+It is neatly divided into modules that can be activated or deactivated individually. The configuration is also saved dutifully.
+So it is possible for all my little helpers always one and the same firmware to use and everything in one pass to update if necessary.
 
 # Install
 
@@ -63,6 +65,10 @@ The following modules are implemented:
 * [output](src/modules/output/README.md)
 * [oneWire](src/modules/1wire/README.md)
 * [vindriktning](src/modules/vindriktning/README.md)
+
+And for to ptogrammers, here is a small and easy to use template:
+
+* [module template](src/modules/README.md)
 
 # Contributors
 
