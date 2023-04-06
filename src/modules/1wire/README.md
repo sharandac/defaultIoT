@@ -7,7 +7,32 @@
 </p>
 <hr/>
 
-# function
+# Table of Contents
+
+* 1\. [description](#description)
+* 2\. [web interface](#web-interface)
+* 3\. [mqtt interface](#mqtt-interface)
+    * 3.1\. [mqtt stat](#mqtt-stat)
+    * 3.2\. [mqtt cmnd](#mqtt-cmnd)
+    * 3.3\. [mqtt tele](#mqtt-tele)
+    
+# description
+
+Reading OneWire temperature sensors. A maximum of 16 sensors can be read out. These are provided if correctly set via Mqtt with the appropriate interval.
+
+OneWire settings
+
+* OneWire data bus pin
+* report in °C or °F
+* internal sensor read interval
+
+sensor data
+
+* out each found sensor
+
+mqtt section
+
+* a checkbox which activates the status sending via mqtt. The interval is activated and set in the mqtt settings.
 
 # web interface
 
@@ -44,7 +69,9 @@
 
 ## mqtt cmnd
 
+```json
 Not available
+```
 
 ## mqtt tele
 
@@ -62,3 +89,5 @@ On each connect to a mqtt server a telemetry information is send like this:
   "channel": 10,
   "ssid": "karlshorst_BGN",
   "rssi": -60
+}
+```

@@ -7,7 +7,31 @@
 </p>
 <hr/>
 
-# function
+# Table of Contents
+
+* 1\. [description](#description)
+* 2\. [web interface](#web-interface)
+* 3\. [mqtt interface](#mqtt-interface)
+    * 3.1\. [mqtt stat](#mqtt-stat)
+    * 3.2\. [mqtt cmnd](#mqtt-cmnd)
+    * 3.3\. [mqtt tele](#mqtt-tele)
+    
+# description
+
+These modules provide PWM outputs that can be controlled.
+
+PWM settings
+
+* pin count
+* pin
+* frequency
+* current value
+* minimal possible PWM value ( min: 0 )
+* maximal possible PWM value ( max: 255 )
+
+mqtt section
+
+* a checkbox which activates the status sending via mqtt. The interval is activated and set in the mqtt settings.
 
 # web interface
 

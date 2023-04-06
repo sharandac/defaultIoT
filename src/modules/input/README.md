@@ -7,7 +7,34 @@
 </p>
 <hr/>
 
-# function
+# Table of Contents
+
+* 1\. [description](#description)
+* 2\. [web interface](#web-interface)
+* 3\. [mqtt interface](#mqtt-interface)
+    * 3.1\. [mqtt stat](#mqtt-stat)
+    * 3.2\. [mqtt cmnd](#mqtt-cmnd)
+    * 3.3\. [mqtt tele](#mqtt-tele)
+    
+# description
+
+As the name suggests, it's about the digital inputs. Up to 4 inputs can be managed with various setting options:
+
+pin settings
+
+* number of digital inputs
+* digital Pin
+* a dropdown can use to select the input type like normal, with pull up or with pull down
+* a checkbox to control if the input is inverted or not
+
+mqtt section
+
+* a checkbox which activates the status on change sending via mqtt
+* a checkbox which activates the status sending via mqtt. The interval is activated and set in the mqtt settings.
+
+hardware monitor
+
+* give a bitwise encoded string thats represends the input state
 
 # web interface
 

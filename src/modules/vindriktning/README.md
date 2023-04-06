@@ -7,7 +7,18 @@
 </p>
 <hr/>
 
-# function
+# Table of Contents
+
+* 1\. [description](#description)
+* 2\. [web interface](#web-interface)
+* 3\. [mqtt interface](#mqtt-interface)
+    * 3.1\. [mqtt stat()](#mqtt-stat)
+    * 3.2\. [mqtt cmnd](#mqtt-cmnd)
+    * 3.3\. [mqtt tele](#mqtt-tele)
+    
+# description
+
+see [Vindriktning base project](https://github.com/sharandac/vindriktning)
 
 # web interface
 
@@ -18,29 +29,44 @@
 ## mqtt stat
 
 ```Json
-Not available
+{
+  "id": "vindriktning_d22534",
+  "ip": "192.168.2.108",
+  "time": "2023-04-06 11:50.13",
+  "uptime": 21406,
+  "version": "2023033001; firmware: Apr  1 2023 16:51:46; GCC-Version: 5.2.0",
+  "reset_reason": "ESP_RST_BROWNOUT",
+  "reset_time": "1970-01-01 01:00.01",
+  "interval": 15,
+  "sensor": {
+    "pm1006": {
+      "pm1": 795,
+      "pm25": 11,
+      "pm10": 273
+    }
+  }
+}
 ```
 
 ## mqtt cmnd
 
-```Json
-Not available
+```
 ```
 
 ## mqtt tele
 
 ```Json
 {
-  "id": "sensor_f62ca8",
-  "ip": "192.168.2.85",
-  "time": "2023-04-03 11:23.55",
+  "id": "vindriktning_d22534",
+  "ip": "192.168.2.108",
+  "time": "2023-04-06 11:53.41",
   "uptime": 1,
-  "reset_reason": "ESP_RST_SW",
-  "reset_time": "2023-04-03 11:23.54",
-  "mac": "24:62:AB:F6:2C:A8",
+  "reset_reason": "ESP_RST_BROWNOUT",
+  "reset_time": "2023-04-06 11:53.40",
+  "mac": "C0:49:EF:D2:25:34",
   "channel": 10,
   "ssid": "karlshorst_BGN",
-  "rssi": -60
+  "rssi": -70
 }
 ```
 

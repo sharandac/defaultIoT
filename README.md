@@ -22,22 +22,23 @@ pio run -t upload
 
 After that, take a look at your monitorport ...
 
-```bash
-[I][main.cpp:31] setup(): start defaultIoT
-[I][core.cpp:88] core_setup(): core module initialized
-[I][wificlient.cpp:94] wificlient_Task(): Start Wifi-Client on Core: 1
-[I][wificlient.cpp:111] wificlient_Task(): WiFi connection lost, restart ... 
-[I][ntp.cpp:73] ntp_Task(): Start NTP Task on Core: 1
-[I][ntp.cpp:102] ntp_Task(): NTP-client: renew time
-[I][ntp.cpp:114] ntp_Task(): NTP-client: time is 2023-04-01 17:57.25
-[I][mqttclient.cpp:255] Task(): Start MQTT-Client on Core: 1
-[I][webserver.cpp:58] asyncwebserver_Task(): Start Webserver on Core: 1
-[I][wificlient.cpp:127] wificlient_Task(): connected, IP address: 192.168.2.26
-[I][mqttclient.cpp:61] onMqttConnect(): MQTT-Client: connected to [192.168.2.23]
+```
+[I][core.cpp:79] core_setup(): core start defaultIoT
+[I][core.cpp:126] core_setup(): corecustom arduino-esp32 framework detected, enable PM/DFS support, 240/80MHz with light sleep enabled
+[I][wificlient.cpp:109] Task(): Start Wifi-Client on Core: 1
+[I][wificlient.cpp:126] Task(): WiFi connection lost, restart ... 
+[I][ntp.cpp:80] Task(): Start NTP Task on Core: 1
+[I][webserver.cpp:73] asyncwebserver_Task(): Start Webserver on Core: 1
+[I][mqttclient.cpp:287] Task(): Start MQTT-Client on Core: 1
+[I][core.cpp:153] core_setup(): core module initialized
+[I][ntp.cpp:105] Task(): NTP-client: renew time
+[I][ntp.cpp:116] Task(): NTP-client: time is 2023-04-05 20:05.41
+[I][wificlient.cpp:142] Task(): connected, IP address: 192.168.2.26
+[I][mqttclient.cpp:93] onMqttConnect(): MQTT-Client: connected to [192.168.2.23]
 ```
 When the output look like this, congratulation!
 
-If no wifi access data is available an access point will be opened with an unique name like
+If no wifi credentials is available an access point will be opened with an unique name like
 ```bash
 defaultIoT_XXXXX
 ```

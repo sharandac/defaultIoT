@@ -7,7 +7,35 @@
 </p>
 <hr/>
 
-# function
+# Table of Contents
+
+* 1\. [description](#description)
+* 2\. [web interface](#web-interface)
+* 3\. [mqtt interface](#mqtt-interface)
+    * 3.1\. [mqtt stat](#mqtt-stat)
+    * 3.2\. [mqtt cmnd](#mqtt-cmnd)
+    * 3.3\. [mqtt tele](#mqtt-tele)
+    
+# description
+
+This module provides servo outputs that can be controlled.
+
+pin settings
+
+* pin count
+* pin
+* minimal angle
+* neutral angle
+* maximal angle
+* min value ( scaled to min angle )
+* max value ( scaled to max angle )
+* detach time
+* a checkbox which enbaled that the servo go to neutral position on start
+* a checkbox which enbaled that the servo go to neutral position after a movment ( detach time must be set )
+
+# mqtt msg settings
+
+* a checkbox which activates the status sending via mqtt. The interval is activated and set in the mqtt settings.
 
 # web interface
 

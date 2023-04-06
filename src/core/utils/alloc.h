@@ -38,3 +38,5 @@
     #define     REALLOC_ASSERT( ptr, size, message, ... ) ( { void *p = (void*)REALLOC( ptr, size ); ASSERT( p, message, ##__VA_ARGS__ ); p; } )                    /** @brief allocate with realloc and check if allocation was successfull */
     #define     ALLOCA_ASSERT( size, message, ... ) ( { void *p = (void*)ALLOCA( size ); ASSERT( p, message, ##__VA_ARGS__ ); p; } )                                /** @brief allocate with alloca and check if allocation was successfull */  
     #define     CALLOCA_ASSERT( size, message, ... ) ( { void *p = (void*)ALLOCA( size ); memset( p, 0, size ); ASSERT( p, message, ##__VA_ARGS__ ); p; } )         /** @brief allocate with alloca and check if allocation was successfull */
+
+

@@ -111,7 +111,7 @@ static bool loop( EventBits_t event, void *arg );
 static bool mqttclient_cb( EventBits_t event, void *arg );
 static bool webserver_cb( EventBits_t event, void *arg );
 /**
- * @brief setup function for vindriktning, called by autocall function
+ * @brief setup function for template, called by modul autocall function
  */
 static int registed = module_autocall_function( &registration );           /** @brief module auto registration function */
 /**
