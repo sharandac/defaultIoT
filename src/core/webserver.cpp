@@ -221,19 +221,12 @@ static void asyncwebserver_setup(void){
     asyncserver.on("/default", HTTP_GET, []( AsyncWebServerRequest * request ) {
         wsData_t wsData;
         wsData.request = request;
-        
         request->send( 200, "text/plain", "Reset the device to default\r\n" );
         callback_send( webwebser_callback, RESET_CONFIG, (void*)&wsData );
-        SPIFFS.end();
-        SPIFFS.format();
-        SPIFFS.begin();
         delay( 3000 );
         ESP.restart();    
     });
-    asyncserver.on("/format", HTTP_GET, []( AsyncWebServerRequest * request ) {
-        wsData_t wsData;
-        wsData.request = request;
-        
+    asyncserver.on("/format", HTTP_GET, []( AsyncWebServerRequest * request ) {        
         request->send( 200, "text/plain", "format SPIFFS\r\n" );
         SPIFFS.end();
         SPIFFS.format();

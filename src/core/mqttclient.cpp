@@ -92,11 +92,11 @@ static void onMqttConnect(bool sessionPresent) {
 
     log_i( "MQTT-Client: connected to [%s]", mqtt_config.server );
     mqttClient.subscribe( mqtt_stats_topic, 0 );
-    log_d( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_stats_topic );
+    log_i( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_stats_topic );
     mqttClient.subscribe( mqtt_cmnd_topic, 0 );
-    log_d( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_cmnd_topic );
+    log_i( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_cmnd_topic );
     mqttClient.subscribe( mqtt_tele_topic, 0 );
-    log_d( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_tele_topic );
+    log_i( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_tele_topic );
 
     String json;
     String ip;
@@ -193,6 +193,7 @@ static void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProp
              * mqttclient callback structure
              */
             mqttData_t mqttData;
+            mqttData.doc = NULL;
             mqttData.topic = topic;
             mqttData.msg = msg;
             callback_send( mqttclient_callback, MQTTCMND_RAW_DATA, (void*)&mqttData );

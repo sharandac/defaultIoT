@@ -67,6 +67,7 @@ The following modules are implemented:
 * [servo](src/modules/servo/README.md)
 * [foernuftig](src/modules/foernuftig/README.md)
 * [vindriktning](src/modules/vindriktning/README.md)
+* [irsta](src/modules/irsta/README.md)
 
 And for to ptogrammers, here is a small and easy to use template:
 
