@@ -224,6 +224,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 asyncwebserver_send_websocket_msg("option\\" MODULE_NAME "_count\\%d", servo_config.count );
                 for( int i = 0 ; i < servo_config.count && i < MAX_SERVOS; i++ ) {
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, servo_config.device[ i ].pin );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, servo_config.device[ i ].id );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_min_angle\\%d", i, servo_config.device[ i ].min_angle );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_neutal_angle\\%d", i, servo_config.device[ i ].neutal_angle );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_max_angle\\%d", i, servo_config.device[ i ].max_angle );
@@ -266,6 +267,11 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 if ( !strcmp( temp, cmd ) ) {
                     servo_config.device[ i ].pin = atoi( value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, servo_config.device[ i ].pin );
+                }
+                snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_id", i );
+                if ( !strcmp( temp, cmd ) ) {
+                    strncpy( servo_config.device[ i ].id, value, sizeof( servo_config.device[ i ].id ) );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, servo_config.device[ i ].id );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_min_angle", i );
                 if ( !strcmp( temp, cmd ) ) {
@@ -332,6 +338,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                         "    <label>" MODULE_NAME " " + String( i ) + "</label><br>\n"
                         "    <div class='box'>\n"
                         "      <label>pin</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_pin'>\n"
+                        "      <label>id</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_id'>\n"
                         "      <label>min angle</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_min_angle'>\n"
                         "      <label>neutral angle</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_neutal_angle'>\n"
                         "      <label>max angle</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_max_angle'>\n"
@@ -346,6 +353,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             html += servo_config_footer;
             for( int i = 0 ; i < servo_config.count && i < MAX_SERVOS; i++ ) {
                 html += "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin\");"
+                        "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_id\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_min_angle\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_neutal_angle\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_max_angle\");"
@@ -394,6 +402,7 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                 for( int i = 0 ; i < servo_config.count && i < MAX_SERVOS; i++ ) {
                     if( servo_config.device[ i ].enaled ) {
                         doc[ MODULE_NAME ]["pin"][i]["pin"] = servo_config.device[ i ].pin;
+                        doc[ MODULE_NAME ]["pin"][i]["id"] = servo_config.device[ i ].id;
                         doc[ MODULE_NAME ]["pin"][i]["current_angle"] = servo_config.device[ i ].current_angle;
                         doc[ MODULE_NAME ]["pin"][i]["current_value"] = servo_config.device[ i ].current_value;
                         doc[ MODULE_NAME ]["pin"][i]["state"] = servo_config.device[ i ].state;

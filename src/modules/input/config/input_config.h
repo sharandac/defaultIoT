@@ -15,6 +15,7 @@
 
     #define     INPUT_JSON_CONFIG_FILE    "/input.json" /** @brief defines json config file name */
     #define     MAX_INPUTS                4             /** @brief defines max inputs */
+    #define     MAX_LENGTH                32            /** @brief max id length */
     /**
      * @brief input config structure
      */
@@ -26,7 +27,8 @@
             typedef struct {
                 bool enaled = true;                 // enable input    
                 int pin;                            // pin number
-                size_t pin_cfg = INPUT;                // pin config
+                char id[ MAX_LENGTH ] = "";         // id
+                size_t pin_cfg = INPUT;             // pin config
                 bool invert = false;                // invert input
             } input_pin_cfg_t;
 

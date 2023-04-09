@@ -25,6 +25,7 @@ bool pwm_config_t::onSave(JsonDocument& doc) {
             
         doc["pwm"][ i ]["enaled"] = device[ i ].enaled;
         doc["pwm"][ i ]["pin"] = device[ i ].pin;
+        doc["pwm"][ i ]["id"] = device[ i ].id;
         doc["pwm"][ i ]["min"] = device[ i ].min;
         doc["pwm"][ i ]["max"] = device[ i ].max;
         doc["pwm"][ i ]["frequency"] = device[ i ].frequency;
@@ -43,6 +44,7 @@ bool pwm_config_t::onLoad(JsonDocument& doc) {
     for( size_t i = 0 ; i < pwm_count && i < MAX_PWM ; i++ ) {
         device[ i ].enaled = doc["pwm"][ i ]["enaled"] | true;
         device[ i ].pin = doc["pwm"][ i ]["pin"] | -1;
+        strncpy( device[ i ].id, doc["pwm"][ i ]["id"] | "pwm", sizeof( device[ i ].id ) );
         device[ i ].min = doc["pwm"][ i ]["min"] | 0;
         device[ i ].max = doc["pwm"][ i ]["max"] | 255;
         device[ i ].frequency = doc["pwm"][ i ]["frequency"] | 8000;

@@ -13,8 +13,9 @@
     #include <Arduino.h>
     #include "core/utils/basejsonconfig.h"
 
-    #define     SERVO_JSON_CONFIG_FILE    "/servo.json" /** @brief defines json config file name */
-    #define     MAX_SERVOS                4             /** @brief defines max inputs */
+    #define     SERVO_JSON_CONFIG_FILE      "/servo.json" /** @brief defines json config file name */
+    #define     MAX_SERVOS                  4             /** @brief defines max inputs */
+    #define     MAX_ID_LENGTH               32            /** @brief max id length */
     /**
      * @brief input config structure
      */
@@ -24,7 +25,8 @@
              * @brief servo pin config structure
              */
             typedef struct {
-                bool enaled = true;                     // enable input      
+                bool enaled = true;                     // enable input   
+                char id[ MAX_ID_LENGTH ] = "";          // id   
                 int pin;                                // pin number
                 size_t current_angle = 0;               // current angle
                 size_t destination_angle = 0;           // destination angle

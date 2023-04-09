@@ -23,6 +23,7 @@ bool analog_config_t::onSave(JsonDocument& doc) {
     for( size_t i = 0 ; i < count && i < MAX_ANALOG; i++ ) {
         doc["analog"][i]["enaled"] = device[i].enaled;
         doc["analog"][i]["pin"] = device[i].pin;
+        doc["analog"][i]["id"] = device[i].id;
         doc["analog"][i]["trigger_low"] = device[i].trigger_low;
         doc["analog"][i]["trigger_high"] = device[i].trigger_high;
         doc["analog"][i]["trigger_count_reset"] = device[i].trigger_count_reset;
@@ -54,6 +55,7 @@ bool analog_config_t::onLoad(JsonDocument& doc) {
     for( size_t i = 0 ; i < count && i < MAX_ANALOG ; i++ ) {
         device[i].enaled = doc["analog"][i]["enaled"] | false;
         device[i].pin = doc["analog"][i]["pin"] | 0;
+        strncpy( device[i].id, doc["analog"][i]["id"] | "analog", sizeof( device[i].id ) );
         device[i].trigger_low = doc["analog"][i]["trigger_low"] | 0;
         device[i].trigger_high = doc["analog"][i]["trigger_high"] | 0;
         device[i].trigger_count_reset = doc["analog"][i]["trigger_count_reset"] | false;

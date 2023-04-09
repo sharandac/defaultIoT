@@ -92,7 +92,7 @@ void core_setup( void ) {
      */
     core_config.load();
     /**
-     * register webserver and mqtt client callback function
+     * register webserver callback function
      */
     asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/index.htm", CALL_CB_FIRST );
     asyncwebserver_set_cb_active( webserver_cb, true );

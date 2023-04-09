@@ -216,6 +216,7 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                 for( int i = 0 ; i < pwm_config.pwm_count && i < MAX_PWM; i++ ) {
                     if( pwm_config.device[ i ].enaled ) {
                         doc[ MODULE_NAME ]["pin"][i]["pin"] = pwm_config.device[ i ].pin;
+                        doc[ MODULE_NAME ]["pin"][i]["id"] = pwm_config.device[ i ].id;
                         doc[ MODULE_NAME ]["pin"][i]["value"] = pwm_config.device[ i ].value;
                         doc[ MODULE_NAME ]["pin"][i]["frequency"] = pwm_config.device[ i ].frequency;
                         doc[ MODULE_NAME ]["pin"][i]["min"] = pwm_config.device[ i ].min;
@@ -246,6 +247,12 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                         }
                         ledcWrite( channel, pwm_config.device[ channel ].value );
                         asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_value\\%d", channel, pwm_config.device[ channel ].value );
+                    }
+                }
+                if( doc.containsKey("id") && channel >= 0 && channel < MAX_PWM ) {
+                    if( pwm_config.device[ channel ].enaled ) {
+                        strncpy( pwm_config.device[ channel ].id, doc["id"] | "", sizeof( pwm_config.device[ channel ].id ) );
+                        asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%d", channel, pwm_config.device[ channel ].id );
                     }
                 }
                 if( doc.containsKey("frequency") && channel >= 0 && channel < MAX_PWM ) {
@@ -338,6 +345,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
 
                 for( int i = 0 ; i < pwm_config.pwm_count && i < MAX_PWM; i++ ) {
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, pwm_config.device[ i ].pin );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, pwm_config.device[ i ].id );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_frequency\\%d", i, pwm_config.device[ i ].frequency );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_value\\%d", i, pwm_config.device[ i ].value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_min\\%d", i, pwm_config.device[ i ].min );
@@ -382,6 +390,13 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                     ledcAttachPin( pwm_config.device[ i ].pin, i );
                     ledcWrite( i, pwm_config.device[ i ].value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, pwm_config.device[ i ].pin );
+                }
+                snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_id", i );
+                if ( !strcmp( temp, cmd ) ) {
+                    strncpy( pwm_config.device[ i ].id, value, sizeof( pwm_config.device[ i ].id ) );
+                    ledcSetup( i, pwm_config.device[ i ].frequency, 8 );
+                    ledcWrite( i, pwm_config.device[ i ].value );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, pwm_config.device[ i ].id );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_frequency", i );
                 if ( !strcmp( temp, cmd ) ) {
@@ -447,6 +462,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                         "    <label>" MODULE_NAME " " + String( i ) + "</label><br>\n"
                         "    <div class='box'>\n"
                         "      <label>pin</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_pin'>\n"
+                        "      <label>id</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_id'>\n"
                         "      <label>frequency</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_frequency'>\n"
                         "      <label>current value</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_value'>\n"
                         "      <label>min value</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_min'>\n"
@@ -458,6 +474,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             html += "SendSetting(\"" MODULE_NAME "_count\");";
             for( int i = 0 ; i < pwm_config.pwm_count && i < MAX_PWM; i++ ) {
                 html += "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin\");"
+                        "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_id\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_frequency\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_value\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_min\");"

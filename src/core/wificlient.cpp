@@ -122,8 +122,6 @@ static void Task( void * pvParameters ) {
             if( wificlient_config.enable_led )
                 digitalWrite( wificlient_config.led_pin, LOW );
             int wlan_timeout = wificlient_config.timeout;
-
-            log_i("WiFi connection lost, restart ... ");
             
             if( strlen( wificlient_config.ssid ) > 1 )
                 WiFi.begin( wificlient_config.ssid , wificlient_config.password );

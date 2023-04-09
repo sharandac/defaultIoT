@@ -22,6 +22,7 @@ bool servo_config_t::onSave(JsonDocument& doc) {
      */
     for( size_t i = 0 ; i < count && i < MAX_SERVOS; i++ ) {
         doc["servo"][i]["pin"] = device[i].pin;
+        doc["servo"][i]["id"] = device[i].id;
         doc["servo"][i]["min_angle"] = device[i].min_angle;
         doc["servo"][i]["neutal_angle"] = device[i].neutal_angle;
         doc["servo"][i]["max_angle"] = device[i].max_angle;
@@ -58,6 +59,7 @@ bool servo_config_t::onLoad(JsonDocument& doc) {
      */
     for( size_t i = 0 ; i < count && i < MAX_SERVOS ; i++ ) {
         device[i].pin = doc["servo"][i]["pin"] | 0;
+        strncpy( device[i].id, doc["servo"][i]["id"] | "servo", sizeof( device[i].id ) );
         device[i].min_angle = doc["servo"][i]["min_angle"] | 0;
         device[i].neutal_angle = doc["servo"][i]["neutal_angle"] | 90;
         device[i].max_angle = doc["servo"][i]["max_angle"] | 180;

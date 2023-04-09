@@ -15,6 +15,7 @@
 
     #define     OUTPUT_JSON_CONFIG_FILE    "/output.json"   /** @brief defines json config file name */
     #define     MAX_OUTPUTS                4                /** @brief defines max inputs */
+    #define     MAX_LENGTH                 32               /** @brief max id length */
     /**
      * @brief input config structure
      */
@@ -26,6 +27,7 @@
             typedef struct {
                 bool enaled = true;                     // enable input    
                 int pin;                                // pin number
+                char id[ MAX_LENGTH ] = "";             // id
                 bool state = false;                     // state of output
             } output_pin_cfg_t;
 

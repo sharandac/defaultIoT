@@ -25,6 +25,7 @@ bool input_config_t::onSave(JsonDocument& doc) {
             
         doc["input"][i]["enaled"] = device[i].enaled;
         doc["input"][i]["pin"] = device[i].pin;
+        doc["input"][i]["id"] = device[i].id;
         doc["input"][i]["pin_cfg"] = device[i].pin_cfg;
         doc["input"][i]["invert"] = device[i].invert;
     }
@@ -42,6 +43,7 @@ bool input_config_t::onLoad(JsonDocument& doc) {
     for( size_t i = 0 ; i < input_count && i < MAX_INPUTS ; i++ ) {
         device[i].enaled = doc["input"][i]["enaled"] | true;
         device[i].pin = doc["input"][i]["pin"] | -1;
+        strncpy( device[i].id, doc["input"][i]["id"] | "input", sizeof( device[i].id ) );
         device[i].pin_cfg = doc["input"][i]["pin_cfg"] | INPUT;
         device[i].invert = doc["input"][i]["invert"] | false;
 

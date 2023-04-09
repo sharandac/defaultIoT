@@ -202,6 +202,8 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
              * send analog data
              */
             for( size_t i = 0 ; i < analog_config.count && MAX_ANALOG ; i++ ) {
+                doc[ MODULE_NAME ]["pin"][ i ]["pin"] = analog_config.device[ i ].pin;
+                doc[ MODULE_NAME ]["pin"][ i ]["id"] = analog_config.device[ i ].id;
                 doc[ MODULE_NAME ]["pin"][ i ]["value"] = analog_config.device[ i ].value;
                 doc[ MODULE_NAME ]["pin"][ i ]["min"] = analog_config.device[ i ].analog_min;
                 doc[ MODULE_NAME ]["pin"][ i ]["max"] = analog_config.device[ i ].analog_max;
@@ -277,6 +279,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 asyncwebserver_send_websocket_msg("option\\" MODULE_NAME "_count\\%d", analog_config.count );
                 for( int i = 0 ; i < analog_config.count && i < MAX_ANALOG; i++ ) {
                     asyncwebserver_send_websocket_msg( "option\\" MODULE_NAME "_%d_pin\\%d", i, analog_config.device[ i ].pin );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, analog_config.device[ i ].id );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_trigger_low\\%d", i, analog_config.device[ i ].trigger_low );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_trigger_high\\%d", i, analog_config.device[ i ].trigger_high );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_trigger_count\\%d", i, analog_config.device[ i ].trigger_count );
@@ -317,6 +320,11 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                     pinMode( analog_config.device[ i ].pin, INPUT );
                     analog_config.device[ i ].pin = atoi( value );
                     asyncwebserver_send_websocket_msg( "option\\" MODULE_NAME "_%d_pin\\%d", i, analog_config.device[ i ].pin );
+                }
+                snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_id", i );
+                if ( !strcmp( temp, cmd ) ) {
+                    strncpy( analog_config.device[ i ].id, value, sizeof( analog_config.device[ i ].id ) );
+                    asyncwebserver_send_websocket_msg( "option\\" MODULE_NAME "_%d_id\\%s", i, analog_config.device[ i ].id );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_trigger_low", i );
                 if ( !strcmp( temp, cmd ) ) {
@@ -359,6 +367,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                         "    <label>" MODULE_NAME " " + String( i ) + "</label><br>\n"
                         "    <div class='box'>\n"
                         "      <label>pin</label><select id='" MODULE_NAME "_" + String( i ) + "_pin'><option value='36'>ADC1-CH0-GPIO36 (VP)</option><option value='39'>ADC1-CH3 GPIO39 (VN)</option><option value='32'>ADC1-CH4 GPIO32</option><option value='33'>ADC1-CH5 GPIO33</option><option value='34'>ADC1-CH6 GPIO34</option><option value='35'>ADC1-CH7 GPIO35</option></select>"
+                        "      <label>id</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_id'>\n"
                         "      <label>value</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_value' disabled>\n"
                         "      <label>trigger low</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_trigger_low'>\n"
                         "      <label>trigger high</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_trigger_high'>\n"
@@ -370,6 +379,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             html += analog_config_footer;
             for( int i = 0 ; i < analog_config.count && i < MAX_ANALOG; i++ ) {
                 html += "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin\");"
+                        "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_id\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_trigger_low\");"
                         "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_trigger_high\");"
                         "SendCheckboxSetting(\"" MODULE_NAME "_" + String( i ) + "_trigger_count_reset\");";

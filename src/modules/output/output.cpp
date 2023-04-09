@@ -230,6 +230,7 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                 doc[ MODULE_NAME ]["bitmask"] = output_state_bitmask;
                 for( int i = 0 ; i < output_config.output_count && i < MAX_OUTPUTS; i++) {
                     doc[ MODULE_NAME ]["pin"][i]["pin"] = output_config.device[ i ].pin;
+                    doc[ MODULE_NAME ]["pin"][i]["id"] = output_config.device[ i ].id;
                     doc[ MODULE_NAME ]["pin"][ i ][ "state" ] = ( 1 << i ) & output_state ? true : false;
                     doc[ MODULE_NAME ]["pin"][ i ][ "output" ] = ( 1 << i ) & output_state ? "ON" : "OFF";
                 }
@@ -319,6 +320,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
 
                 for( int i = 0 ; i < output_config.output_count && i < MAX_OUTPUTS; i++ ) {
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, output_config.device[ i ].pin );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, output_config.device[ i ].id );
                     asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_%d_pin_state\\%s", i, output_config.device[ i ].state ? "true" : "false " );
                 }
 
@@ -358,6 +360,11 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                     output_config.device[ i ].pin = atoi( value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, output_config.device[ i ].pin );
                 }
+                snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_id", i );
+                if ( !strcmp( temp, cmd ) ) {
+                    strncpy( output_config.device[ i ].id, value, sizeof( output_config.device[ i ].id ) );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, output_config.device[ i ].id );
+                }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_pin_state", i );
                 if ( !strcmp( temp, cmd ) ) {
                     output_config.device[ i ].state = atoi( value ) ? true : false;
@@ -385,9 +392,10 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                     "  </div>\n";
             for( int i = 0 ; i < output_config.output_count && i < MAX_OUTPUTS; i++ ) {
                 html += "  <div class='vbox'>\n"
-                        "    <label>" MODULE_NAME " " + String( i ) + " pin</label><br>\n"
+                        "    <label>" MODULE_NAME " " + String( i ) + "</label><br>\n"
                         "    <div class='box'>\n"
-                        "      <input type='text' size='32' id='output_" + String( i ) + "_pin'>\n"
+                        "      <label>pin</label><input type='text' size='32' id='output_" + String( i ) + "_pin'>\n"
+                        "      <label>id</label><input type='text' size='32' id='output_" + String( i ) + "_id'>\n"
                         "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_pin_state'><label>set " MODULE_NAME " on start</label>\n"
                         "    </div>\n"
                         "  </div>\n";
@@ -396,6 +404,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             html += "SendSetting(\"" MODULE_NAME "_count\");";
             for( int i = 0 ; i < output_config.output_count && i < MAX_OUTPUTS; i++ ) {
                 html += "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin\");"
+                        "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_id\");"
                         "SendCheckboxSetting(\"" MODULE_NAME "_" + String( i ) + "_pin_state\");";
             }
             html += output_config_page_sendBTN;

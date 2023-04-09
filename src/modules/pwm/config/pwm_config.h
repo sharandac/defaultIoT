@@ -14,6 +14,7 @@
 
     #define     PWM_JSON_CONFIG_FILE    "/pwm.json"     /** @brief defines json config file name */
     #define     MAX_PWM                 4               /** @brief defines max pwm */
+    #define     MAX_LENGTH              32              /** @brief max id length */
     /**
      * @brief input config structure
      */
@@ -25,6 +26,7 @@
             typedef struct {
                 bool enaled = true;                     // enable input    
                 int pin;                                // pin number
+                char id[ MAX_LENGTH ] = "";             // id
                 int frequency = 8000;                   // pwm frequency
                 int value = 0;                          // state of output
                 int min = 0;                            // pwm min

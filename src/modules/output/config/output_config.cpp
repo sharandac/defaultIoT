@@ -25,6 +25,7 @@ bool output_config_t::onSave(JsonDocument& doc) {
             
         doc["output"][i]["enaled"] = device[i].enaled;
         doc["output"][i]["pin"] = device[i].pin;
+        doc["output"][i]["id"] = device[i].id;
         doc["output"][i]["state"] = device[i].state;
     }
 
@@ -41,6 +42,7 @@ bool output_config_t::onLoad(JsonDocument& doc) {
     for( size_t i = 0 ; i < output_count && i < MAX_OUTPUTS ; i++ ) {
         device[i].enaled = doc["output"][i]["enaled"] | true;
         device[i].pin = doc["output"][i]["pin"] | -1;
+        strncpy( device[i].id, doc["output"][i]["id"] | "output", sizeof( device[i].id ) );
         device[i].state = doc["output"][i]["state"] | false;
 
         if( device[i].pin <= 0 || device[i].pin >= 40 )

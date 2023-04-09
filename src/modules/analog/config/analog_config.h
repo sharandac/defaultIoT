@@ -15,6 +15,7 @@
 
     #define     ANALOG_JSON_CONFIG_FILE     "/analog.json"  /** @brief defines json config file name */
     #define     MAX_ANALOG                  3               /** @brief defines max analog inputs */
+    #define     MAX_LENGTH                  32              /** @brief max id length */
     /**
      * @brief input config structure
      */
@@ -26,6 +27,7 @@
             typedef struct {
                 bool enaled = false;                    // enable input      
                 int pin = -1;                           // pin number
+                char id[ MAX_LENGTH ] = "";             // id
                 int value = 0;                          // value
                 int trigger_low = 0;                    // min value
                 int trigger_high = 4095;                // max value

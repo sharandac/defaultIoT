@@ -247,8 +247,9 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                 doc[ MODULE_NAME ]["count"] = input_config.input_count;
                 doc[ MODULE_NAME ]["bitmask"] = input_state_bitmask;
                 for( int i = 0 ; i < input_config.input_count && i < MAX_INPUTS; i++) {
-                    doc[ MODULE_NAME ]["pin"][i]["pin"] = input_config.device[ i ].pin;
-                    doc[ MODULE_NAME ]["pin"][ i ][ "state" ] = ( 1 << i ) & input_state ? true : false;
+                    doc[ MODULE_NAME ]["pin"][ i ]["pin"] = input_config.device[ i ].pin;
+                    doc[ MODULE_NAME ]["pin"][ i ]["id"] = input_config.device[ i ].id;
+                    doc[ MODULE_NAME ]["pin"][ i ]["state"] = ( 1 << i ) & input_state ? true : false;
             }
             }
             retval = true;
@@ -325,6 +326,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 asyncwebserver_send_websocket_msg("option\\" MODULE_NAME "_count\\%d", input_config.input_count );
                 for( int i = 0 ; i < input_config.input_count && i < MAX_INPUTS; i++ ) {
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, input_config.device[ i ].pin );
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, input_config.device[ i ].id );
                     asyncwebserver_send_websocket_msg( "option\\" MODULE_NAME "_%d_pin_cfg\\%d", i, input_config.device[ i ].pin_cfg );
                     asyncwebserver_send_websocket_msg( "checkbox\\" MODULE_NAME "_%d_pin_invert\\%s", i, input_config.device[ i ].invert ? "true" : "false " );
                 }
@@ -365,6 +367,11 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                     pinMode( input_config.device[ i ].pin, input_config.device[ i ].pin_cfg );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, input_config.device[ i ].pin );
                 }
+                snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_id", i );
+                if ( !strcmp( temp, cmd ) ) {
+                    strncpy( input_config.device[ i ].id, value, sizeof( input_config.device[ i ].id ) );
+                    asyncwebserver_send_websocket_msg("option\\" MODULE_NAME "_%d_id\\%s", i, input_config.device[ i ].id );
+                }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_pin_cfg", i );
                 if ( !strcmp( temp, cmd ) ) {
                     pinMode( input_config.device[ i ].pin, INPUT );
@@ -399,9 +406,10 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                     "  </div>\n";
             for( int i = 0 ; i < input_config.input_count && i < MAX_INPUTS; i++ ) {
                 html += "  <div class='vbox'>\n"
-                        "    <label>" MODULE_NAME " " + String( i ) + " pin</label><br>\n"
+                        "    <label>" MODULE_NAME " " + String( i ) + "</label><br>\n"
                         "    <div class='box'>\n"
-                        "      <input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_pin'>\n"
+                        "      <label>pin</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_pin'>\n"
+                        "      <label>id</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_id'>\n"
                         "    </div>\n"
                         "    <div class='box'>\n"
                         "      <select id='" MODULE_NAME "_" + String( i ) + "_pin_cfg' onclick='SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin_cfg\");get_settings();'><option value='1'>INPUT</option><option value='5'>INPUT_PULLUP</option><option value='9'>INPUT_PULLDOWN</option></select>\n"
@@ -412,7 +420,8 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             html += input_config_page_footer;
             html += "SendSetting(\"" MODULE_NAME "_count\");";
             for( int i = 0 ; i < input_config.input_count && i < MAX_INPUTS; i++ )
-                html += "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin\");";
+                html += "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin\");"
+                        "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_id\");";
             html += input_config_page_sendBTN;
             html += html_footer;
             request->send(200, "text/html", html);

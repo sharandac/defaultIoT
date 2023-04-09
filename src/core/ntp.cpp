@@ -102,7 +102,6 @@ static void Task( void * pvParameters ) {
              * check if wifi is connected
              */
             if ( WiFi.isConnected() && ntp_config.enable ) {
-                log_i( "NTP-client: renew time" );
                 /**
                  * set timezone and server
                  */
