@@ -7,6 +7,18 @@
 </p>
 <hr/>
 
+| Supported Targets | ESP32 |
+| ----------------- | ----- |
+
+# Table of Contents
+
+* 1\. [defaultIoT](#defaultIoT)
+* 2\. [Install](#Install)
+* 3\. [module](#module)
+* 3.1\. [module template](#module-template)
+* 3.2\. [coding guide](#coding-guide)
+* 5\. [Contributors](#Contributors)
+
 # defaultIoT
 
 Again and again, the wish came up that all the little helpers don't have to reinvent the wheel over and over again. Here is the matching completely over-engineered firmware.
@@ -25,18 +37,17 @@ pio run -t upload
 After that, take a look at your monitorport ...
 
 ```
-[I][core.cpp:79] core_setup(): core start defaultIoT
-[I][core.cpp:126] core_setup(): corecustom arduino-esp32 framework detected, enable PM/DFS support, 240/80MHz with light sleep enabled
-[I][wificlient.cpp:109] Task(): Start Wifi-Client on Core: 1
-[I][wificlient.cpp:126] Task(): WiFi connection lost, restart ... 
+[I][core.cpp:79] core_setup(): start defaultIoT
+[I][core.cpp:105] core_setup(): watchdog enabled
+[I][core.cpp:127] core_setup(): custom arduino-esp32 framework detected, enable PM/DFS support, 240/40MHz with light sleep enabled
+[I][wificlient.cpp:108] Task(): Start Wifi-Client on Core: 1
 [I][ntp.cpp:80] Task(): Start NTP Task on Core: 1
-[I][webserver.cpp:73] asyncwebserver_Task(): Start Webserver on Core: 1
-[I][mqttclient.cpp:287] Task(): Start MQTT-Client on Core: 1
-[I][core.cpp:153] core_setup(): core module initialized
-[I][ntp.cpp:105] Task(): NTP-client: renew time
-[I][ntp.cpp:116] Task(): NTP-client: time is 2023-04-05 20:05.41
-[I][wificlient.cpp:142] Task(): connected, IP address: 192.168.2.26
+[I][webserver.cpp:71] Task(): Start Webserver on Core: 1
+[I][mqttclient.cpp:288] Task(): Start MQTT-Client on Core: 1
+[I][core.cpp:154] core_setup(): core module initialized
+[I][modul_mgmt.cpp:242] module_setup(): module mgmt initialized
 [I][mqttclient.cpp:93] onMqttConnect(): MQTT-Client: connected to [192.168.2.23]
+[I][wificlient.cpp:139] Task(): connected, IP address: 192.168.2.110
 ```
 When the output look like this, congratulation!
 
@@ -69,9 +80,15 @@ The following modules are implemented:
 * [vindriktning](src/modules/vindriktning/README.md)
 * [irsta](src/modules/irsta/README.md)
 
+# programming
+
+## module template
+
 And for to ptogrammers, here is a small and easy to use template:
 
 * [module template](src/modules/README.md)
+
+## coding guide
 
 # Contributors
 

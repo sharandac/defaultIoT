@@ -11,8 +11,12 @@
 #pragma once
 
     #include "core/utils/basejsonconfig.h"
-    
-    #define     VINDRIKTNING_JSON_CONFIG_FILE     "/vindriktning.json"    /** @brief defines json config file name */
+    /**
+     * @brief class settings like namespace, filename and max length for strings
+     */
+    #define     CLASS_NAME_T            vindriktning_config_t   /** @brief defines namespace */
+    #define     JSON_CONFIG_FILE        "/vindriktning.json"    /** @brief defines json config file name */
+    #define     MAX_LENGTH              32                      /** @brief defines max length for strings */
     /**
      * @brief 
      */
@@ -20,11 +24,11 @@
     /**
      * @brief ioport config structure
      */
-    class vindriktning_config_t : public BaseJsonConfig {
+    class CLASS_NAME_T : public BaseJsonConfig {
         public:
-            vindriktning_config_t();
-            int RXpin = 16;
-            bool mqtt_msg_stat = true;
+            CLASS_NAME_T();
+            int RXpin = 16;                                     /** @brief defines RX pin */
+            bool mqtt_msg_stat = true;                          /** @brief defines if mqtt msg stat is enabled */
             
         protected:
             ////////////// Available for overloading: //////////////

@@ -266,7 +266,6 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 asyncwebserver_send_websocket_msg( MODULE_NAME "_pin\\%d", onewire_config.pin );
                 asyncwebserver_send_websocket_msg( MODULE_NAME "_interval\\%d", onewire_config.interval );
                 asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_stat\\%s", onewire_config.mqtt_msg_stat ? "true" : "false " );
-                asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_on_change\\%s", onewire_config.mqtt_msg_on_change ? "true" : "false " );
                 for( int i = 0 ; i < sensorcount && i < MAX_SENSORS; i++ )
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_sensor_%d\\%s", i, tempsensor[ i ].temp_str.c_str() );
             }
@@ -290,13 +289,6 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             else if ( !strcmp ( MODULE_NAME "_mqtt_msg_stat", cmd ) ) {
                 onewire_config.mqtt_msg_stat = atoi( value ) ? true : false;
                 asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_stat\\%s", onewire_config.mqtt_msg_stat ? "true" : "false " );
-            }
-            /**
-             * store and set mqtt_msg_on_change
-             */
-            else if ( !strcmp( MODULE_NAME "_mqtt_msg_on_change", cmd ) ) {
-                onewire_config.mqtt_msg_on_change = atoi( value ) ? true : false;
-                asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_on_change\\%s", onewire_config.mqtt_msg_on_change ? "true" : "false " );
             }
             /**
              * store and set report_in_fahrenheit

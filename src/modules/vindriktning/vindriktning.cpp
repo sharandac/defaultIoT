@@ -17,7 +17,7 @@
 #include "core/utils/alloc.h"
 
 #include "vindriktning.h"
-#include "config/vindriktning_config.h"
+#include "config/json_config.h"
 
 #include "pm1006.hpp"
 /**

@@ -17,7 +17,7 @@
 #include "core/utils/alloc.h"
 
 #include "foernuftig.h"
-#include "config/foernuftig_config.h"
+#include "config/json_config.h"
 /**
  * module namespace
  */

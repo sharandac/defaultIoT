@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#include "output_config.h"
+#include "json_config.h"
 
-output_config_t::output_config_t() : BaseJsonConfig( OUTPUT_JSON_CONFIG_FILE ) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool output_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["output_count"] = output_count;
 
@@ -35,7 +35,7 @@ bool output_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool output_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     output_count = doc["output_count"] | 0;
 
@@ -55,6 +55,6 @@ bool output_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool output_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
     return true;
 }

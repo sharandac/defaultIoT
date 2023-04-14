@@ -24,12 +24,12 @@
 /**
  * module namespace
  */
-#define MODULE_NAME                "ntp"
+#define MODULE_NAME                 "ntp"
 /**
  * local variables
  */
-TaskHandle_t _Task;                 /** @brief handle for ntp task */
-ntp_config_t ntp_config;                /** @brief ntp config */
+static TaskHandle_t _Task;          /** @brief handle for ntp task */
+ntp_config_t ntp_config;            /** @brief ntp config */
 /**
  * local static funtions
  */
@@ -112,7 +112,7 @@ static void Task( void * pvParameters ) {
                 if( getLocalTime( &info ) ) {
                     NextMillis = millis() + NTP_RENEW_INTERVAL * 1000l;
                     strftime( time_str, sizeof( time_str ), "%Y-%m-%d %H:%M.%S", &info );
-                    log_i("NTP-client: time is %s", time_str );
+                    log_d("NTP-client: time is %s", time_str );
                 }
                 else
                     log_e( "NTP-client: Failed to obtain time" );

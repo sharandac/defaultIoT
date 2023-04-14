@@ -19,11 +19,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
-#include "irsta_config.h"
+#include "json_config.h"
 
-irsta_config_t::irsta_config_t() : BaseJsonConfig(IRSTA_JSON_CONFIG_FILE) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool irsta_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["led"]["max_led"] = max_led;
     doc["led"]["count"] = led_count;
@@ -45,7 +45,7 @@ bool irsta_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool irsta_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     max_led = doc["led"]["max_led"] | 112;
     led_count = doc["led"]["count"] | 512;
@@ -67,6 +67,6 @@ bool irsta_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool irsta_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
     return true;
 }

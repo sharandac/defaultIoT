@@ -10,10 +10,9 @@
  */
 #include "ntp_config.h"
 
-ntp_config_t::ntp_config_t() : BaseJsonConfig( NTP_JSON_CONFIG_FILE ) {
-}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool ntp_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["enable"] = enable;
     doc["server"] = server;
@@ -23,7 +22,7 @@ bool ntp_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool ntp_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     enable = doc["enable"] | true;
     strlcpy( server, doc["server"] | "pool.ntp.org", sizeof( server ) );
@@ -33,7 +32,7 @@ bool ntp_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool ntp_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
     /*
      * make an uniqe Hostname for the SoftAp SSID
      */

@@ -26,8 +26,9 @@
 /**
  * local variables
  */
-wificlient_config_t wificlient_config;      /** @brief wifi config */
-TaskHandle_t _wificlient_Task;              /** @brief wifi task handle */
+wificlient_config_t wificlient_config;                              /** @brief wifi config */
+TaskHandle_t _wificlient_Task;                                      /** @brief wifi task handle */
+static bool APMODE = false;
 /**
  * local static functions
  */
@@ -96,8 +97,6 @@ static void registration( void ) {
                                 1,                      /* Priority of the task */
                                 &_wificlient_Task,      /* Task handle. */
                                 1 );                    /* Core where the task should run */
-
-    vTaskDelay( 250 / portTICK_PERIOD_MS );
 }
 
 /**
@@ -141,14 +140,22 @@ static void Task( void * pvParameters ) {
             }
         }
         else {
-            if( wificlient_config.enable_led )
-                digitalWrite( wificlient_config.led_pin, HIGH );
+            if( wificlient_config.enable_led ) {
+                if ( WiFi.status() == WL_CONNECTED )
+                    digitalWrite( wificlient_config.led_pin, HIGH );
+                else {
+                    if( APMODE )
+                        digitalWrite( wificlient_config.led_pin, digitalRead( wificlient_config.led_pin ) ? false : true );
+                    else
+                        digitalWrite( wificlient_config.led_pin, LOW );
+                }
+            }
         }
         /**
          * wait 1 sec
          */
         esp_task_wdt_reset();
-        vTaskDelay( 1000 );
+        vTaskDelay( 500 );
     }
 }
 
@@ -256,7 +263,8 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
             else if ( !strcmp("get_wlan_settings", cmd ) ) {
-                asyncwebserver_send_websocket_msg("hostname\\%s", wificlient_get_hostname() );
+                asyncwebserver_send_websocket_msg( "unique_hostname\\%s", wificlient_get_hostname_unique() );
+                asyncwebserver_send_websocket_msg( "hostname\\%s", wificlient_get_hostname() );
                 asyncwebserver_send_websocket_msg( "wifi_ssid\\%s", wificlient_config.ssid );
                 asyncwebserver_send_websocket_msg( "wifi_password\\%s", "********" );
                 asyncwebserver_send_websocket_msg( "checkbox\\wifi_low_power\\%s", wificlient_config.low_power ? "true" : "false ");
@@ -326,7 +334,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             retval = true;
             break;
         case WEB_MENU:
-            asyncwebserver_set_menu_entry( "/wlan.htm", "wlan settings" );
+            asyncwebserver_set_menu_entry( "/wlan.htm", "wlan" );
             retval = true;
             break;
         case SAVE_CONFIG:
@@ -345,8 +353,6 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
  * @brief start softAP
  */
 static void start_softAP( void ) {
-    static bool APMODE = false;
-
     if( !APMODE && wificlient_config.enable_softap ) {
         WiFi.softAP( wificlient_config.softap_ssid, wificlient_config.softap_password );
         log_i("starting Wifi-AP with SSID \"%s\" / \"%s\"", wificlient_config.softap_ssid, wificlient_config.softap_password );

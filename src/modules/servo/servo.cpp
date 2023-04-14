@@ -17,7 +17,7 @@
 #include "core/utils/alloc.h"
 
 #include "servo.h"
-#include "config/servo_config.h"
+#include "config/json_config.h"
 /**
  * module namespace
  */
@@ -191,10 +191,6 @@ static bool loop( EventBits_t event, void *arg ) {
 static bool webserver_cb( EventBits_t event, void *arg ) {
     bool retval = false;
     wsData_t *wsData = (wsData_t*)arg;
-    AsyncWebSocketClient *client = wsData->client;
-    AsyncWebServerRequest *request = wsData->request;
-    const char *cmd = wsData->cmd ? wsData->cmd : "";
-    const char *value = wsData->value ? wsData->value : "";
     String html = "";
     /**
      * check if servo is initialized
@@ -203,24 +199,23 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
 
     switch( event ) {
         case WS_DATA:
-            ASSERT( client, MODULE_NAME " client is NULL" );
             /**
              * check for cmd
              */
-            if ( !strcmp( "save_" MODULE_NAME "_settings", cmd ) ) {
+            if ( !strcmp( "save_" MODULE_NAME "_settings", wsData->cmd ) ) {
                 servo_config.save();
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
             /**
              * check get status command
              */
-            else if ( !strcmp( "get_" MODULE_NAME "_status", cmd ) ) {
+            else if ( !strcmp( "get_" MODULE_NAME "_status", wsData->cmd ) ) {
 
             }
             /**
              * check get settings command
              */
-            else if ( !strcmp("get_" MODULE_NAME "_settings", cmd ) ) {
+            else if ( !strcmp("get_" MODULE_NAME "_settings", wsData->cmd ) ) {
                 asyncwebserver_send_websocket_msg("option\\" MODULE_NAME "_count\\%d", servo_config.count );
                 for( int i = 0 ; i < servo_config.count && i < MAX_SERVOS; i++ ) {
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, servo_config.device[ i ].pin );
@@ -240,22 +235,22 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             /**
              * store and set pin count
              */
-            else if ( !strcmp ( MODULE_NAME "_count", cmd ) ) {
-                servo_config.count = atoi( value );
+            else if ( !strcmp ( MODULE_NAME "_count", wsData->cmd ) ) {
+                servo_config.count = atoi( wsData->value );
                 asyncwebserver_send_websocket_msg( "option\\" MODULE_NAME "_count\\%d", servo_config.count );
             }
             /**
              * store and set mqtt_msg_stat
              */ 
-            else if ( !strcmp ( MODULE_NAME "_mqtt_msg_stat", cmd ) ) {
-                servo_config.mqtt_msg_stat = atoi( value ) ? true : false;
+            else if ( !strcmp ( MODULE_NAME "_mqtt_msg_stat", wsData->cmd ) ) {
+                servo_config.mqtt_msg_stat = atoi( wsData->value ) ? true : false;
                 asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_stat\\%s", servo_config.mqtt_msg_stat ? "true" : "false " );
             }
             /**
              * store and set mqtt_msg_on_change
              */
-            else if ( !strcmp( MODULE_NAME "_mqtt_msg_on_change", cmd ) ) {
-                servo_config.mqtt_msg_on_change = atoi( value ) ? true : false;
+            else if ( !strcmp( MODULE_NAME "_mqtt_msg_on_change", wsData->cmd ) ) {
+                servo_config.mqtt_msg_on_change = atoi( wsData->value ) ? true : false;
                 asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_on_change\\%s", servo_config.mqtt_msg_on_change ? "true" : "false " );
             }
             /**
@@ -264,60 +259,63 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             for( int i = 0 ; i < servo_config.count && i < MAX_SERVOS; i++ ) {
                 char temp[32];
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_pin", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].pin = atoi( value );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].pin = atoi( wsData->value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_pin\\%d", i, servo_config.device[ i ].pin );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_id", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    strncpy( servo_config.device[ i ].id, value, sizeof( servo_config.device[ i ].id ) );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    strncpy( servo_config.device[ i ].id, wsData->value, sizeof( servo_config.device[ i ].id ) );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_id\\%s", i, servo_config.device[ i ].id );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_min_angle", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].min_angle = atoi( value );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].min_angle = atoi( wsData->value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_min_angle\\%d", i, servo_config.device[ i ].min_angle );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_neutal_angle", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].neutal_angle = atoi( value );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].neutal_angle = atoi( wsData->value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_neutal_angle\\%d", i, servo_config.device[ i ].neutal_angle );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_max_angle", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].max_angle = atoi( value );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].max_angle = atoi( wsData->value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_max_angle\\%d", i, servo_config.device[ i ].max_angle );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_min_value", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].min_value = atoi( value );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].min_value = atoi( wsData->value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_min_value\\%d", i, servo_config.device[ i ].min_value );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_max_value", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].max_value = atoi( value );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].max_value = atoi( wsData->value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_max_value\\%d", i, servo_config.device[ i ].max_value );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_detach_time", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].detach_time = atoi( value );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].detach_time = atoi( wsData->value );
                     asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_detach_time\\%d", i, servo_config.device[ i ].detach_time );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_neutral_on_start", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].neutral_on_start = atoi( value ) ? true : false;
-                    asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_%d_neutral_on_start\\%s", i, servo_config.device[ i ].neutal_angle ? "true" : "false " );
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].neutral_on_start = atoi( wsData->value ) ? true : false;
+                    asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_%d_neutral_on_start\\%s", i, servo_config.device[ i ].neutral_on_start ? "true" : "false " );
                 }
                 snprintf( temp, sizeof( temp ), MODULE_NAME "_%d_neutral_after_move", i );
-                if ( !strcmp( temp, cmd ) ) {
-                    servo_config.device[ i ].neutral_after_move = atoi( value ) ? true : false;
+                if ( !strcmp( temp, wsData->cmd ) ) {
+                    servo_config.device[ i ].neutral_after_move = atoi( wsData->value ) ? true : false;
                     asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_%d_neutral_after_move\\%s", i, servo_config.device[ i ].neutral_after_move ? "true" : "false " );
                 }
             }
             retval = true;
             break;
         case WEB_DATA:
-            ASSERT( request, MODULE_NAME " request is NULL" );
+            /**
+             * check if request is valid for an asyncwebserver request and answer
+             */
+            ASSERT( wsData->request, MODULE_NAME " request is NULL" );
             /**
              * build html page
              */
@@ -349,7 +347,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                         "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_neutral_after_move' onclick='SendCheckboxSetting(\"" MODULE_NAME "_" + String( i ) + "_neutral_after_move\");'><label>neutral after movement (only when detach is set)</label>\n"
                         "    </div>\n"
                         "  </div>\n";
-            }            
+            }
             html += servo_config_footer;
             for( int i = 0 ; i < servo_config.count && i < MAX_SERVOS; i++ ) {
                 html += "SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin\");"
@@ -363,7 +361,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             }
             html += servo_config_sendBTN;
             html += html_footer;
-            request->send(200, "text/html", html);
+            wsData->request->send(200, "text/html", html);
             retval = true;
             break;
         case WEB_MENU:

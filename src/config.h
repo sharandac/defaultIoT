@@ -15,7 +15,7 @@
     /*
      * firmewareversion string
      */
-    #define __FIRMWARE__            "2023033001"
+    #define __FIRMWARE__            "2023041301"
     /*
      * default wifi credentials, makes first start easier
      */

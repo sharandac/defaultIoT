@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#include "pwm_config.h"
+#include "json_config.h"
 
-pwm_config_t::pwm_config_t() : BaseJsonConfig( PWM_JSON_CONFIG_FILE ) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool pwm_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["pwm_count"] = pwm_count;
 
@@ -37,7 +37,7 @@ bool pwm_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool pwm_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     pwm_count = doc["pwm_count"] | 0;
 
@@ -59,6 +59,6 @@ bool pwm_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool pwm_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
     return true;
 }

@@ -16,9 +16,11 @@
 #include <ESPAsyncWebServer.h>
 #include <SPIFFSEditor.h>
 #include <esp_task_wdt.h>
+#include <ESPmDNS.h>
 
 #include "core.h"
 #include "config.h"
+#include "core/wificlient.h"
 #include "core/utils/alloc.h"
 
 #include "webserver.h"
@@ -43,8 +45,8 @@ static int registed = core_autocall_function( &registration, 1 );           /** 
 /*
  * local static functions
  */
-static void asyncwebserver_Task( void * pvParameters );
-static void asyncwebserver_setup(void);
+static void Task( void * pvParameters );
+static void initialize( void );
 
 static void registration ( void ) {
     /**
@@ -54,27 +56,25 @@ static void registration ( void ) {
     /**
      * start webserver task
      */
-    xTaskCreatePinnedToCore(    asyncwebserver_Task,
+    xTaskCreatePinnedToCore(    Task,
                                 "webserver Task",
                                 20000,
                                 NULL,
                                 1,
                                 &_WEBSERVER_Task,
                                 1 );
-
-    vTaskDelay( 250 / portTICK_PERIOD_MS );
 }
 /**
  * @brief webserver task
  * 
  * @param pvParameters 
  */
-void asyncwebserver_Task( void * pvParameters ) {
+void Task( void * pvParameters ) {
     log_i( "Start Webserver on Core: %d", xPortGetCoreID() );
     /**
      * setup webserver
      */
-    asyncwebserver_setup();
+    initialize();
     /**
      * add watchdog
      */
@@ -145,12 +145,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
              * trigger ws data callback
              */
             wsData_t wsData;
-            wsData.server = server;
             wsData.client = client;
-            wsData.type = type;
-            wsData.arg = arg;
-            wsData.data = data;
-            wsData.len = len;
             wsData.cmd = cmd;
             wsData.value = value;
             callback_send( webwebser_callback, WS_DATA, (void*)&wsData );
@@ -201,7 +196,7 @@ void handleUpdate( AsyncWebServerRequest *request, const String& filename, size_
     }
 }
 
-static void asyncwebserver_setup(void){
+static void initialize( void ) {
     asyncserver.on( "/info", HTTP_GET, [](AsyncWebServerRequest * request ) { request->send( 200, "text/plain", "firmware: " __DATE__ " " __TIME__ "\r\nGCC-Version: " __VERSION__ "\r\n" ); } );
     asyncserver.addHandler( new SPIFFSEditor( SPIFFS ) );
     asyncserver.onFileUpload([](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final){
@@ -223,7 +218,7 @@ static void asyncwebserver_setup(void){
         wsData.request = request;
         request->send( 200, "text/plain", "Reset the device to default\r\n" );
         callback_send( webwebser_callback, RESET_CONFIG, (void*)&wsData );
-        delay( 3000 );
+        delay( 500 );
         ESP.restart();    
     });
     asyncserver.on("/format", HTTP_GET, []( AsyncWebServerRequest * request ) {        
@@ -231,7 +226,7 @@ static void asyncwebserver_setup(void){
         SPIFFS.end();
         SPIFFS.format();
         SPIFFS.begin();
-        delay( 3000 );
+        delay( 500 );
         ESP.restart();    
     });
     asyncserver.on("/memory", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -251,7 +246,7 @@ static void asyncwebserver_setup(void){
         response->addHeader( "Refresh", "20" );  
         response->addHeader( "Location", "/" );
         request->send(response);
-        delay(3000);
+        delay( 500 );
         ESP.restart();    
     });
     asyncserver.on("/update", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -264,6 +259,8 @@ static void asyncwebserver_setup(void){
     asyncserver.onNotFound([](AsyncWebServerRequest *request){
         wsData_t wsData;
         wsData.request = request;
+        wsData.cmd = "";
+        wsData.value = "";
         /**
          * build menu structure
          */
@@ -284,6 +281,11 @@ static void asyncwebserver_setup(void){
     ws.onEvent( onWsEvent );
     asyncserver.addHandler( &ws );
     asyncserver.begin();
+
+    ASSERT( MDNS.begin( wificlient_get_hostname() ), MODULE_NAME " start mDNS service failed" );
+    MDNS.addService( "http", "tcp", 80 );
+    MDNS.addService( "ftp", "tcp", 21 );
+
 }
 
 void asyncwebserver_set_menu_entry( const char *filename, const char *entry ) {

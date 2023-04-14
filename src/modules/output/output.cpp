@@ -16,7 +16,7 @@
 #include "core/utils/alloc.h"
 
 #include "output.h"
-#include "config/output_config.h"
+#include "config/json_config.h"
 /**
  * module namespace
  */

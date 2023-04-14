@@ -16,7 +16,7 @@
 #include "core/utils/alloc.h"
 
 #include "pwm.h"
-#include "config/pwm_config.h"
+#include "config/json_config.h"
 /**
  * analog module namespace
  */

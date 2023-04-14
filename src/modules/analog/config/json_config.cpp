@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#include "analog_config.h"
+#include "json_config.h"
 
-analog_config_t::analog_config_t() : BaseJsonConfig( ANALOG_JSON_CONFIG_FILE ) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool analog_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
     /**
      * save the servo count
      */
@@ -44,7 +44,7 @@ bool analog_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool analog_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
     /**
      * load the servo count
      */
@@ -74,6 +74,6 @@ bool analog_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool analog_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
     return true;
 }

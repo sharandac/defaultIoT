@@ -16,7 +16,7 @@
 #include "core/utils/alloc.h"
 
 #include "irsta.h"
-#include "config/irsta_config.h"
+#include "config/json_config.h"
 /**
  * module namespace
  */

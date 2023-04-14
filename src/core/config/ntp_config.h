@@ -13,23 +13,23 @@
 
     #include "core/utils/basejsonconfig.h"
     #include "config.h"
-    
-    #define     NTP_JSON_CONFIG_FILE     "/ntp.json"    /** @brief defines json config file name */
     /**
-     * @brief 
+     * @brief class settings like namespace, filename and max length for strings
      */
-    #define     NTP_MAX_TEXT_SIZE   64
+    #define     CLASS_NAME_T            ntp_config_t        /** @brief defines namespace */
+    #define     JSON_CONFIG_FILE        "/ntp.json"         /** @brief defines json config file name */
+    #define     MAX_LENGTH              64                  /** @brief defines max length for strings */
     #define     NTP_RENEW_INTERVAL  3600 * 24
     /**
      * @brief ioport config structure
      */
-    class ntp_config_t : public BaseJsonConfig {
+    class CLASS_NAME_T : public BaseJsonConfig {
         public:
-            ntp_config_t();
-            bool enable = true;
-            char server[ NTP_MAX_TEXT_SIZE ] = "pool.ntp.org";
-            char timezone[ NTP_MAX_TEXT_SIZE ] = "CET-1CEST,M3.5.0,M10.5.0/3";
-            int interval = NTP_RENEW_INTERVAL;
+            CLASS_NAME_T();
+            bool enable = true;                             /** @brief defines if ntp is enabled */
+            char server[ MAX_LENGTH ] = "pool.ntp.org";     /** @brief defines server */
+            char timezone[ MAX_LENGTH ] = "CET-1CEST,M3.5.0,M10.5.0/3"; /** @brief defines timezone */
+            int interval = NTP_RENEW_INTERVAL;              /** @brief defines ntp update interval */
 
         protected:
             ////////////// Available for overloading: //////////////

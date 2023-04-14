@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#include "vindriktning_config.h"
+#include "json_config.h"
 
-vindriktning_config_t::vindriktning_config_t() : BaseJsonConfig( VINDRIKTNING_JSON_CONFIG_FILE ) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool vindriktning_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["RXpin"] = RXpin;
     doc["mqtt_msg_stat"] = mqtt_msg_stat;
@@ -20,7 +20,7 @@ bool vindriktning_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool vindriktning_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     RXpin = doc["RXpin"] | 16;
     mqtt_msg_stat = doc["mqtt_msg_stat"] | true;
@@ -28,7 +28,7 @@ bool vindriktning_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool vindriktning_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
 
     return true;
 }

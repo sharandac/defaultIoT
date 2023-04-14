@@ -10,9 +10,9 @@
  */
 #include "onewire_config.h"
 
-onewire_config_t::onewire_config_t() : BaseJsonConfig( ONEWIRE_JSON_CONFIG_FILE ) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool onewire_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     if( pin <= 0 || pin >= 40 )
         enabled = false;
@@ -23,13 +23,12 @@ bool onewire_config_t::onSave(JsonDocument& doc) {
     doc["pin"] = pin;   
     doc["interval"] = interval;
     doc["reportInFahrenheit"] = reportInFahrenheit;     
-    doc["mqtt_msg_on_change"] = mqtt_msg_on_change;
     doc["mqtt_msg_stat"] = mqtt_msg_stat;
 
     return true;
 }
 
-bool onewire_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     if( pin <= 0 || pin >= 40 )
         enabled = false;
@@ -39,11 +38,10 @@ bool onewire_config_t::onLoad(JsonDocument& doc) {
     interval = doc["interval"] | 15;
     reportInFahrenheit = doc["reportInFahrenheit"] | false;
     mqtt_msg_stat = doc["mqtt_msg_stat"] | false;
-    mqtt_msg_on_change = doc["mqtt_msg_on_change"] | false;
 
     return true;
 }
 
-bool onewire_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
     return true;
 }

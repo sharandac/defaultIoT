@@ -10,10 +10,9 @@
  */
 #include "mqtt_config.h"
 
-mqtt_config_t::mqtt_config_t() : BaseJsonConfig( MQTT_JSON_CONFIG_FILE ) {
-}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool mqtt_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["server"] = server;
     doc["port"] = port;
@@ -21,13 +20,12 @@ bool mqtt_config_t::onSave(JsonDocument& doc) {
     doc["password"] = password;
     doc["topic"] = topic;
     doc["interval"] = interval;
-    doc["realtimestats"] = realtimestats;
     doc["sendstats"] = sendstats;
 
     return true;
 }
 
-bool mqtt_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     strlcpy( server, doc["server"] | "", sizeof( server ) );
     port = doc["port"] | 1883;
@@ -35,13 +33,12 @@ bool mqtt_config_t::onLoad(JsonDocument& doc) {
     strlcpy( password, doc["password"] | "", sizeof( password ) );
     strlcpy( topic, doc["topic"] | "", sizeof( topic ) );
     interval = doc["interval"] | 15;
-    realtimestats = doc["realtimestats"] | true;
     sendstats = doc["sendstats"] | true;
     
     return true;
 }
 
-bool mqtt_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
 
     return true;
 }

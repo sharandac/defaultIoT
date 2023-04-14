@@ -10,11 +10,12 @@
  */
 #include "module_config.h"
 
-module_config_t::module_config_t() : BaseJsonConfig( MODULE_JSON_CONFIG_FILE ) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool module_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["count"] = count;
+    doc["roundtrip"] = roundtrip;
 
     for( size_t i = 0 ; i < count && i < MAX_MODULES; i++ ) {
         doc["module"][ i ]["id"] = module[ i ].id;
@@ -24,9 +25,10 @@ bool module_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool module_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
     
     count = doc["count"] | 0;
+    roundtrip = doc["roundtrip"] | 25;
 
     for( size_t i = 0 ; i < count && i < MAX_MODULES; i++ ) {
         module[ i ].enaled = doc["module"][ i ]["enaled"] | true;
@@ -36,7 +38,7 @@ bool module_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool module_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
 
     return true;
 }

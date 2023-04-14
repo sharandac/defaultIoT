@@ -16,7 +16,7 @@
 #include "core/utils/alloc.h"
 
 #include "input.h"
-#include "config/input_config.h"
+#include "config/json_config.h"
 /**
  * module namespace
  */
@@ -213,7 +213,6 @@ static bool loop( EventBits_t event, void *arg ) {
              * send input event to queue
              */
             if( input != INPUT_NONE ) {
-                log_i( MODULE_NAME ": %d", input );
                 xQueueSend( input_queue, &input, 0 );
             }
         }
@@ -409,11 +408,9 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                         "    <label>" MODULE_NAME " " + String( i ) + "</label><br>\n"
                         "    <div class='box'>\n"
                         "      <label>pin</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_pin'>\n"
+                        "      <label>input type</label><select id='" MODULE_NAME "_" + String( i ) + "_pin_cfg' onclick='SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin_cfg\");get_settings();'><option value='1'>INPUT</option><option value='5'>INPUT_PULLUP</option><option value='9'>INPUT_PULLDOWN</option></select>\n"
                         "      <label>id</label><input type='text' size='32' id='" MODULE_NAME "_" + String( i ) + "_id'>\n"
-                        "    </div>\n"
-                        "    <div class='box'>\n"
-                        "      <select id='" MODULE_NAME "_" + String( i ) + "_pin_cfg' onclick='SendSetting(\"" MODULE_NAME "_" + String( i ) + "_pin_cfg\");get_settings();'><option value='1'>INPUT</option><option value='5'>INPUT_PULLUP</option><option value='9'>INPUT_PULLDOWN</option></select>\n"
-                        "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_pin_invert' onclick='SendCheckboxSetting(\"" MODULE_NAME "_" + String( i ) + "_pin_invert\");get_settings();'><label for='" MODULE_NAME "_" + String( i ) + "_pin_invert'>invert " MODULE_NAME "</label>\n"
+                        "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_pin_invert' onclick='SendCheckboxSetting(\"" MODULE_NAME "_" + String( i ) + "_pin_invert\");get_settings();'><label for='" MODULE_NAME "_" + String( i ) + "_pin_invert'>invert " MODULE_NAME "</label><br><br>\n"
                         "    </div>\n"
                         "  </div>\n";
             }

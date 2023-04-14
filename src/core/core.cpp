@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "webserver.h"
+#include "wificlient.h"
 #include "core/utils/alloc.h"
 #include "core/utils/callback.h"
 
@@ -30,11 +31,11 @@
 /**
  * local variables
  */
-static bool initialized = false;
-core_config_t core_config;
-esp_pm_config_esp32_t pm_config;
-size_t core_autocall_counter = 0;
-core_autocall_table_t *core_autocall_table = NULL;
+static bool initialized = false;                    /** @brief flag if module is initialized */
+core_config_t core_config;                          /** @brief core config structure */
+esp_pm_config_esp32_t pm_config;                    /** @brief power management config structure */
+size_t core_autocall_counter = 0;                   /** @brief counter for registered setup functions */
+core_autocall_table_t *core_autocall_table = NULL;  /** @brief table for registered setup functions */
 /**
  * local callback functions with local scope
  */
@@ -76,7 +77,6 @@ void core_setup( void ) {
      * start serial
      */
     Serial.begin( 115200 );
-    log_i( MODULE_NAME " start %s", DEVICE_NAME );
     /**
      * mount SPIFFS
      */
@@ -92,40 +92,21 @@ void core_setup( void ) {
      */
     core_config.load();
     /**
-     * register webserver callback function
-     */
-    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/index.htm", CALL_CB_FIRST );
-    asyncwebserver_set_cb_active( webserver_cb, true );
-    /*
-     * enable watchdog
-     */
-    if( core_config.watchdog ) {
-        esp_task_wdt_init( WDT_TIMEOUT, true );
-        esp_task_wdt_add( NULL );
-    }
-    /**
-     * set cpu frequency
-     */
-    setCpuFrequencyMhz( core_config.frequency );
-    /**
      * set brownout detection
      */
     if( !core_config.brownout_detection ) {
         WRITE_PERI_REG( RTC_CNTL_BROWN_OUT_REG, 0 );
-        log_i( MODULE_NAME " brown out detection disabled");
+        log_i( "brown out detection disabled");
     }
     /**
-     * set frequency scaling if enabled
+     * register webserver callback function
      */
-    #if CONFIG_PM_ENABLE
-        if( core_config.frequency_scaling ) {
-            pm_config.max_freq_mhz = core_config.frequency;
-            pm_config.min_freq_mhz = 80;
-            pm_config.light_sleep_enable = core_config.light_sleep ? true : false ;
-            ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
-            log_i( MODULE_NAME "custom arduino-esp32 framework detected, enable PM/DFS support, %d/80MHz with light sleep %s", core_config.frequency, core_config.light_sleep ? "enabled" : "disabled" );
-        }
-    #endif
+    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/index.htm", CALL_CB_FIRST );
+    asyncwebserver_set_cb_active( webserver_cb, true );
+    /**
+     * set cpu frequency
+     */
+    setCpuFrequencyMhz( core_config.frequency );
     /**
      * start core servies
      */
@@ -146,6 +127,30 @@ void core_setup( void ) {
         free( core_autocall_table );
         core_autocall_table = NULL;
     }
+    /*
+     * enable watchdog
+     */
+    if( core_config.watchdog ) {
+        esp_task_wdt_init( WDT_TIMEOUT, true );
+        esp_task_wdt_add( NULL );
+        log_i("watchdog enabled");
+    }
+    /**
+     * set frequency scaling if enabled
+     */
+    #if CONFIG_PM_ENABLE
+        if( core_config.frequency_scaling ) {
+            pm_config.max_freq_mhz = core_config.frequency;
+            pm_config.min_freq_mhz = 40;
+            pm_config.light_sleep_enable = core_config.light_sleep ? true : false ;
+            ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
+            log_i( "custom arduino-esp32 framework detected, enable PM/DFS support, %d/%dMHz with light sleep %s", pm_config.max_freq_mhz, pm_config.min_freq_mhz, core_config.light_sleep ? "enabled" : "disabled" );
+        }
+    #endif
+    /**
+     * print hostname
+     */
+    log_i( "hostname: %s", wificlient_get_hostname() );
     /**
      * set initialized flag
      */

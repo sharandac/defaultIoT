@@ -20,16 +20,20 @@
  * analog module namespace
  */
 #define MODULE_NAME                "module"
-
-static bool initialized = false;
-module_config_t module_config;
-callback_t *module_loop_callback = NULL;
-callback_t *module_init_callback = NULL;
-callback_t *module_deinit_callback = NULL;
-static int module_autocall_counter = 0;
-module_autocall_table_t *module_autocall_table = NULL;
-
-static void module_mgmt_init( void );
+/**
+ * local variables
+ */
+static bool initialized = false;                        /** @brief flag if module is initialized */
+module_config_t module_config;                          /** @brief module config */
+callback_t *module_loop_callback = NULL;                /** @brief callback function for loop */
+callback_t *module_init_callback = NULL;                /** @brief callback function for init */
+callback_t *module_deinit_callback = NULL;              /** @brief callback function for deinit */
+static int module_autocall_counter = 0;                 /** @brief counter for the registered modules */
+module_autocall_table_t *module_autocall_table = NULL;  /** @brief table for the registered modules */
+/**
+ * local static funtions
+ */
+static void module_setup( void );
 static void module_mgmt_call_by_id( EventBits_t event, const char *id );
 static bool webserver_cb( EventBits_t event, void *arg );
 /**
@@ -78,6 +82,7 @@ void module_mgmt_call_setup( void ) {
         free( module_autocall_table );
         module_autocall_table = NULL;
     }
+    module_mgmt_call_init();
 }
 /**
  * @brief call the init function of all modules if enabled
@@ -103,8 +108,14 @@ void module_mgmt_call_deinit( void ) {
  * @brief call the loop function of all modules if enabled
  */
 void module_mgmt_call_loop( void ) {
-    callback_send( module_loop_callback, MODULE_MGMT_LOOP, NULL );
-    vTaskDelay( 25 );
+    static uint64_t NextMillis = millis();
+
+    if( NextMillis < millis() ) {
+        uint64_t roundtrip = millis();
+        NextMillis += module_config.roundtrip;
+        callback_send( module_loop_callback, MODULE_MGMT_LOOP, NULL );
+        module_config.used_roundtrip_time = millis() - roundtrip;
+    }
 }
 /**
  * @brief call a module by id and send a event
@@ -151,7 +162,7 @@ bool module_mgmt_register( CALLBACK_FUNC init_func, CALLBACK_FUNC deinit_func, C
      * check if module is already initialized
      */
     if( !initialized )
-        module_mgmt_init();
+        module_setup();
     /**
      * register init callback function
      */
@@ -214,25 +225,25 @@ bool module_mgmt_register( CALLBACK_FUNC init_func, CALLBACK_FUNC deinit_func, C
  * @brief init module management
  * 
  */
-static void module_mgmt_init( void ) {
+static void module_setup( void ) {
     /**
-     * check if module is already initialized
+     * check if already initialized
      */
-    if( !initialized ) {
-        /**
-         * load module config
-         */
-        module_config.load();
-        /**
-         * register webserver callback
-         */
-        asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/" MODULE_NAME ".htm", CALL_CB_MODUL );
-        asyncwebserver_set_cb_active( webserver_cb, true );
-        /**
-         * set initialized
-         */
-        initialized = true;
-    }
+    ASSERT( !initialized, MODULE_NAME " already initialized, check your code" );
+    /**
+     * load module config
+     */
+    module_config.load();
+    /**
+     * register webserver callback
+     */
+    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/" MODULE_NAME ".htm", CALL_CB_MODUL );
+    asyncwebserver_set_cb_active( webserver_cb, true );
+    /**
+     * set initialized
+     */
+    initialized = true;
+    log_i( MODULE_NAME " mgmt initialized");
 }
 /**
  * @brief webserver callback
@@ -265,13 +276,21 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 module_config.save();
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
+            else if ( !strcmp( "get_" MODULE_NAME "_status", cmd ) ) {
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_used_roundtrip_time\\%lld", module_config.used_roundtrip_time );
+            }
             /**
              * check get settings command
              */
             else if ( !strcmp("get_" MODULE_NAME "_settings", cmd ) ) {
                 for( size_t i = 0 ; i < module_config.count && i < MAX_MODULES; i++ ) {
+                    asyncwebserver_send_websocket_msg( MODULE_NAME "_roundtrip\\%d", module_config.roundtrip );
                     asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_%d_state\\%s", i, module_config.module[ i ].enaled ? "true" : "false " );
                 }
+            }
+            else if ( !strcmp ( MODULE_NAME "_roundtrip", cmd ) ) {
+                module_config.roundtrip = atoi( value );
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_roundtrip\\%d", module_config.roundtrip );
             }
             /**
              * crawl all modules and check if state changed
@@ -316,15 +335,29 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             html = html_header;
             html += asyncwebserver_get_menu();
             html += module_mgmt_config_page_head;
+            html += "  <div class='vbox'>\n"
+                    "    <label>loop roundtrip time in ms</label><br>\n"
+                    "    <div class='box'>\n"
+                    "      <input type='text' size='32' id='" MODULE_NAME "_roundtrip' disabled>\n"
+                    "    </div>\n"
+                    "  </div>\n"
+                    "  <div class='vbox'>\n"
+                    "    <label>used roundtrip time in ms</label><br>\n"
+                    "    <div class='box'>\n"
+                    "      <input type='text' size='32' id='" MODULE_NAME "_used_roundtrip_time' disabled>\n"
+                    "    </div>\n"
+                    "  </div>\n";
+
             for( int i = 0 ; i < module_config.count && i < MAX_MODULES; i++ ) {
-                html += "  <div class='vbox'>\n";
-                html += "    <label>" MODULE_NAME ": " + String( module_config.module[ i ].id ) + "</label><br>\n";
-                html += "    <div class='box'>\n";
-                html += "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_state' " + String( module_config.module[ i ].enaled ? "checked" : "" ) + "><label for=\"" MODULE_NAME "_" + String( i ) + "_state\">enabled</label>\n";
-                html += "    </div>\n";
-                html += "  </div>\n";
+                html += "  <div class='vbox'>\n"
+                        "    <label>" MODULE_NAME ": " + String( module_config.module[ i ].id ) + "</label><br>\n"
+                        "    <div class='box'>\n"
+                        "      <input type='checkbox' id='" MODULE_NAME "_" + String( i ) + "_state' " + String( module_config.module[ i ].enaled ? "checked" : "" ) + "><label for=\"" MODULE_NAME "_" + String( i ) + "_state\">enabled</label>\n"
+                        "    </div>\n"
+                        "  </div>\n";
             }
             html += module_mgmt_config_page_footer;
+            html += "SendSetting(\"" MODULE_NAME "_roundtrip\");";
             for( int i = 0 ; i < module_config.count && MAX_MODULES; i++ ) {
                 html += "SendCheckboxSetting(\"" MODULE_NAME "_" + String( i ) + "_state\");";
             }

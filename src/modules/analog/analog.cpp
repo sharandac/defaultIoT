@@ -16,7 +16,7 @@
 #include "core/utils/alloc.h"
 
 #include "analog.h"
-#include "config/analog_config.h"
+#include "config/json_config.h"
 /**
  * analog module namespace
  */

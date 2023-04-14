@@ -12,12 +12,6 @@
 
     #include <core/utils/callback.h>
     /**
-     * @brief webserver callback event mask
-     */
-    #define NTP_START               _BV(0)      /** @brief event mask for powermgm standby */
-    #define NTP_SYNC                _BV(1)      /** @brief event mask for powermgm standby */
-    #define NTP_CONFIG_CHANGE       _BV(2)      /** @brief event mask for powermgm wakeup */ 
-    /**
      * @brief ntp config page
      */
     static const char ntp_config_page[] =
@@ -26,7 +20,9 @@
         "<script>set_save_namespace(\"save_ntp_settings\");</script>\n"
         "<div id=\"ntp_settings\" class=\"hbox\">\n"
         "  <div class=\"vbox\">\n"
-        "    <input type=\"checkbox\" id=\"ntp_enable\"><label for=\"enable_ntp\"> enable ntp</label>\n"
+        "    <div class=\"box\">\n"
+        "      <input type=\"checkbox\" id=\"ntp_enable\"><label for=\"enable_ntp\"> enable ntp</label>\n"
+        "    </div>\n"
         "  </div>\n"
         "  <div class=\"vbox\">\n"
         "    <label>ntp server</label><br>\n"

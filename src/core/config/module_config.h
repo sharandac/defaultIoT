@@ -12,32 +12,34 @@
 
     #include "core/utils/basejsonconfig.h"
     #include "config.h"
-    
-    #define     MODULE_JSON_CONFIG_FILE     "/module.json"      /** @brief defines json config file name */
     /**
-     * @brief maximum number of modules
+     * @brief class settings like namespace, filename and max length for strings
      */
-    #define     MAX_MODULES                 16                  /** @brief max number of modules */
-    #define     MAX_MODULE_ID_NAME_LEN      32                  /** @brief max length of module id */
+    #define     CLASS_NAME_T            module_config_t     /** @brief defines namespace */
+    #define     JSON_CONFIG_FILE        "/module.json"      /** @brief defines json config file name */
+    #define     MAX_MODULES             16                  /** @brief max number of modules */
+    #define     MAX_LENGTH              32                  /** @brief defines max length for strings */
     /**
      * @brief ioport config structure
      */
-    class module_config_t : public BaseJsonConfig {
+    class CLASS_NAME_T : public BaseJsonConfig {
         private:
             /**
              * @brief output pin config structure
              */
             typedef struct {
-                bool enaled = false;                            // enable input    
-                char id[ MAX_MODULE_ID_NAME_LEN ] = "";         // id of module
+                bool enaled = false;                        /** @brief enable module */  
+                char id[ MAX_LENGTH ] = "";                 /** @brief id of module */
             } module_cfg_t;
         public:
             /**
              * @brief module config structure
              */
-            module_config_t();
-            size_t count = 0;                                   // number of modules
-            module_cfg_t module[ MAX_MODULES ];                 // module config
+            CLASS_NAME_T();
+            size_t count = 0;                               /** @brief number of modules */
+            size_t roundtrip = 25;                          /** @brief roundtrip time in ms */
+            uint64_t used_roundtrip_time = 0;               /** @brief used roundtrip time in ms */
+            module_cfg_t module[ MAX_MODULES ];             /** @brief module config */
 
 
         protected:

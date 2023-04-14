@@ -62,6 +62,7 @@
         "<h2>modul settings</h2>\n"
         "<script>set_settings_namespace(\"get_module_settings\");</script>\n"
         "<script>set_save_namespace(\"save_module_settings\");</script>\n"
+        "<script>set_status_namespace(\"get_module_status\");</script>\n"
         "<div id=\"modul_settings\" class=\"hbox\">\n";
     static const char module_mgmt_config_page_footer[] =
         "</div>\n"

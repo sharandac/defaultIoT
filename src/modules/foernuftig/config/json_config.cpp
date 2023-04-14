@@ -8,11 +8,11 @@
  * @copyright Copyright (c) 2023
  * 
  */
-#include "foernuftig_config.h"
+#include "json_config.h"
 
-foernuftig_config_t::foernuftig_config_t() : BaseJsonConfig( FOERNUFTIG_JSON_CONFIG_FILE ) {}
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {}
 
-bool foernuftig_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["fan"]["hardware"]["button_0_pin"] = button_0_pin;
     doc["fan"]["hardware"]["button_1_pin"] = button_1_pin;
@@ -33,7 +33,7 @@ bool foernuftig_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool foernuftig_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     button_0_pin = doc["fan"]["hardware"]["button_0_pin"] | 21;
     button_1_pin = doc["fan"]["hardware"]["button_1_pin"] | 22;
@@ -54,7 +54,7 @@ bool foernuftig_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool foernuftig_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
 
     return true;
 }

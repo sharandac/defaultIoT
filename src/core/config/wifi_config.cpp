@@ -11,10 +11,10 @@
 #include <WiFi.h>
 #include "wifi_config.h"
 
-wificlient_config_t::wificlient_config_t() : BaseJsonConfig( WIFICLIENT_JSON_CONFIG_FILE ) {
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {
 }
 
-bool wificlient_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["hostname_unique"] = hostname_unique;
     doc["hostname"] = hostname;
@@ -32,7 +32,7 @@ bool wificlient_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool wificlient_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
     /*
      * make an uniqe Hostname for the SoftAp SSID
      */
@@ -55,7 +55,7 @@ bool wificlient_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool wificlient_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
     /*
      * make an uniqe Hostname for the SoftAp SSID
      */

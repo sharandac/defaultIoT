@@ -42,7 +42,7 @@ char ClientID[128] = "";                        /** @brief ClientID for mqtt */
 char mqtt_stats_topic[128] = "";                /** @brief mqtt stats topic */
 char mqtt_cmnd_topic[128] = "";                 /** @brief mqtt cmnd topic */
 char mqtt_tele_topic[128] = "";                 /** @brief mqtt tele topic */
-char reset_reason[64]="";                        /** @brief reset state */
+char reset_reason[64]="";                       /** @brief reset state */
 char reset_time[64]="";                         /** @brief reset time */
 /**
  * local static funtions
@@ -92,11 +92,11 @@ static void onMqttConnect(bool sessionPresent) {
 
     log_i( "MQTT-Client: connected to [%s]", mqtt_config.server );
     mqttClient.subscribe( mqtt_stats_topic, 0 );
-    log_i( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_stats_topic );
+    log_d( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_stats_topic );
     mqttClient.subscribe( mqtt_cmnd_topic, 0 );
-    log_i( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_cmnd_topic );
+    log_d( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_cmnd_topic );
     mqttClient.subscribe( mqtt_tele_topic, 0 );
-    log_i( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_tele_topic );
+    log_d( "MQTT-Client: subscribe [%s]:%s", mqtt_config.server, mqtt_tele_topic );
 
     String json;
     String ip;
@@ -351,10 +351,6 @@ static void Task( void * pvParameters ) {
      */
     mqttclient_initialized = true;
     /**
-     * delay task
-     */
-    vTaskDelay( 1000 );
-    /**
      * wait for wifi
      */
     while( !WiFi.isConnected() ){};
@@ -472,7 +468,6 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 asyncwebserver_send_websocket_msg( MODULE_NAME "_topic\\%s", mqtt_config.topic );
                 asyncwebserver_send_websocket_msg( MODULE_NAME "_interval\\%d", mqtt_config.interval );
                 asyncwebserver_send_websocket_msg( "checkbox\\" MODULE_NAME "_sendstats\\%s", mqtt_config.sendstats ? "true" : "false" );
-                asyncwebserver_send_websocket_msg( "checkbox\\" MODULE_NAME "_realtimestats\\%s", mqtt_config.realtimestats ? "true" : "false" );
             }
             else if ( !strcmp("mqtt_server", cmd ) ) {
                 strncpy( mqtt_config.server, value, sizeof( mqtt_config.server ) );
@@ -517,7 +512,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             retval = true;
             break;
         case WEB_MENU:
-            asyncwebserver_set_menu_entry( "/" MODULE_NAME "client.htm", MODULE_NAME " settings" );
+            asyncwebserver_set_menu_entry( "/" MODULE_NAME "client.htm", MODULE_NAME );
             retval = true;
             break;
         case SAVE_CONFIG:

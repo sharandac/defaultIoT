@@ -10,10 +10,10 @@
  */
 #include "core_config.h"
 
-core_config_t::core_config_t() : BaseJsonConfig( CORE_JSON_CONFIG_FILE ) {
+CLASS_NAME_T::CLASS_NAME_T() : BaseJsonConfig( JSON_CONFIG_FILE ) {
 }
 
-bool core_config_t::onSave(JsonDocument& doc) {
+bool CLASS_NAME_T::onSave(JsonDocument& doc) {
 
     doc["frequency"] = frequency;
     doc["brownout_detection"] = brownout_detection;
@@ -24,7 +24,7 @@ bool core_config_t::onSave(JsonDocument& doc) {
     return true;
 }
 
-bool core_config_t::onLoad(JsonDocument& doc) {
+bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
 
     frequency = doc["frequency"] | 240;
     brownout_detection = doc["brownout_detection"] | true;
@@ -35,7 +35,7 @@ bool core_config_t::onLoad(JsonDocument& doc) {
     return true;
 }
 
-bool core_config_t::onDefault( void ) {
+bool CLASS_NAME_T::onDefault( void ) {
 
     return true;
 }

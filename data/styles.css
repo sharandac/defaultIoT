@@ -502,9 +502,13 @@ select {
       width: 100%;
       float: left;
       padding: 5px;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 20px;
 }
 
 .box {
-     float: left;
-     padding: 5px;
+      float: left;
+      padding: 5px;
+      font-family: 'Open Sans', sans-serif;
+      font-size: 16px;
 }

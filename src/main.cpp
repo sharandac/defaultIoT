@@ -9,11 +9,9 @@
  * 
  */
 #include <Arduino.h>
-#include <esp_task_wdt.h>
 /**
- * include all core modules
+ * include core and modules
  */
-#include "config.h"
 #include "core/core.h"
 #include "core/modul_mgmt.h"
 
@@ -23,13 +21,9 @@ void setup() {
      */
     core_setup();
     /**
-     * module registration
+     * module setup and init
      */
     module_mgmt_call_setup();
-    /**
-     * start all modules dependent on the configuration
-     */
-    module_mgmt_call_init();
 }
 
 void loop() {
