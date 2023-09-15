@@ -60,15 +60,17 @@ static void registration( void ) {
      * set wifi bandwidth and power save mode
      * 
      */
-    if(  wificlient_config.low_bandwidth )
-        esp_wifi_set_bandwidth( ESP_IF_WIFI_STA, WIFI_BW_HT20 );
-    else
-        esp_wifi_set_bandwidth( ESP_IF_WIFI_STA, WIFI_BW_HT40 );
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 0, 0)
+        if(  wificlient_config.low_bandwidth )
+            esp_wifi_set_bandwidth( ESP_IF_WIFI_STA, WIFI_BW_HT20 );
+        else
+            esp_wifi_set_bandwidth( ESP_IF_WIFI_STA, WIFI_BW_HT40 );
 
-    if( wificlient_config.low_power )
-        esp_wifi_set_ps( WIFI_PS_MODEM );
-    else
-        esp_wifi_set_ps( WIFI_PS_NONE );
+        if( wificlient_config.low_power )
+            esp_wifi_set_ps( WIFI_PS_MODEM );
+        else
+            esp_wifi_set_ps( WIFI_PS_NONE );
+    #endif
     /**
      * set hostname
      */
@@ -91,7 +93,7 @@ static void registration( void ) {
      * start wifi client task
      */
     xTaskCreatePinnedToCore(    Task,                   /* Function to implement the task */
-                                "mqttclient Task",      /* Name of the task */
+                                "wificlient Task",      /* Name of the task */
                                 5000,                   /* Stack size in words */
                                 NULL,                   /* Task input parameter */
                                 1,                      /* Priority of the task */
@@ -155,7 +157,7 @@ static void Task( void * pvParameters ) {
          * wait 1 sec
          */
         esp_task_wdt_reset();
-        vTaskDelay( 500 );
+        vTaskDelay( 100 );
     }
 }
 
@@ -259,7 +261,9 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              * check all commands
              */
             if ( !strcmp( "save_wlan_settings", cmd ) ) {
+                core_enter_critical();
                 wificlient_config.save();
+                core_exit_critical();
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
             else if ( !strcmp("get_wlan_settings", cmd ) ) {
@@ -338,11 +342,15 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             retval = true;
             break;
         case SAVE_CONFIG:
+            core_enter_critical();
             wificlient_config.save();
+            core_exit_critical();
             retval = true;
             break;
         case RESET_CONFIG:
+            core_enter_critical();
             wificlient_config.resetToDefault();
+            core_exit_critical();
             retval = true;
             break;
     }

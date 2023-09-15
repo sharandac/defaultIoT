@@ -70,6 +70,11 @@ static bool initialize( EventBits_t event, void *arg ) {
      */
     pinMode( GPIO_NUM_26, OUTPUT );
     /**
+     * set webserver callback function active
+     */
+    mqtt_client_set_cb_active( mqttclient_cb, true );
+    asyncwebserver_set_cb_active( webserver_cb, true );
+    /**
      * set initialized flag
      */
     initialized = true;
@@ -96,6 +101,11 @@ static bool deinitialize( EventBits_t event, void *arg ) {
      *  deinitialize your hardware
      */
     pinMode( GPIO_NUM_26, INPUT );
+    /**
+     * set webserver callback function inactive
+     */
+    mqtt_client_set_cb_active( mqttclient_cb, false );
+    asyncwebserver_set_cb_active( webserver_cb, false );
     /**
      * set initialized flag
      */

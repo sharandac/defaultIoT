@@ -17,13 +17,13 @@
 #include <SPIFFSEditor.h>
 #include <esp_task_wdt.h>
 #include <ESPmDNS.h>
-
 #include "core.h"
 #include "config.h"
 #include "core/wificlient.h"
 #include "core/utils/alloc.h"
 
 #include "webserver.h"
+#include "webserver_files.h"
 /**
  * analog module namespace
  */
@@ -148,8 +148,9 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
             wsData.client = client;
             wsData.cmd = cmd;
             wsData.value = value;
+            core_enter_critical();
             callback_send( webwebser_callback, WS_DATA, (void*)&wsData );
-
+            core_exit_critical();
             free( cmd );
         }
         default: break;
@@ -216,7 +217,7 @@ static void initialize( void ) {
     asyncserver.on("/default", HTTP_GET, []( AsyncWebServerRequest * request ) {
         wsData_t wsData;
         wsData.request = request;
-        request->send( 200, "text/plain", "Reset the device to default\r\n" );
+        request->send( 200, "text/plain", "Reset the device to default settings\r\n" );
         callback_send( webwebser_callback, RESET_CONFIG, (void*)&wsData );
         delay( 500 );
         ESP.restart();    
@@ -226,6 +227,17 @@ static void initialize( void ) {
         SPIFFS.end();
         SPIFFS.format();
         SPIFFS.begin();
+        delay( 500 );
+        ESP.restart();    
+    });
+    asyncserver.on("/clear", HTTP_GET, []( AsyncWebServerRequest * request ) {    
+        wsData_t wsData;
+        wsData.request = request;    
+        request->send( 200, "text/plain", "format SPIFFS and write config\r\n" );
+        SPIFFS.end();
+        SPIFFS.format();
+        SPIFFS.begin();
+        callback_send( webwebser_callback, SAVE_CONFIG, (void*)&wsData );
         delay( 500 );
         ESP.restart();    
     });
@@ -277,6 +289,20 @@ static void initialize( void ) {
             request->send(response);
         }
     });
+
+    asyncserver.on("/menu.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+        request->send_P(200, "application/javascript", menu_js, sizeof( menu_js ), nullptr );
+    });
+    asyncserver.on("/websocket.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+        request->send_P(200, "application/javascript", websocket_js, sizeof( websocket_js ), nullptr );
+    });
+    asyncserver.on("/styles.css", HTTP_GET, [](AsyncWebServerRequest * request) {
+        request->send_P(200, "text/css", styles_css, sizeof( styles_css ), nullptr );
+    });
+    asyncserver.on("/jquery-latest.min.js", HTTP_GET, [](AsyncWebServerRequest * request) {
+        request->send_P( 200, "application/javascript", jquery_latest_min_js,  sizeof( jquery_latest_min_js ), nullptr );
+    });
+
     asyncserver.serveStatic( "/", SPIFFS, "/").setDefaultFile("index.htm");
     ws.onEvent( onWsEvent );
     asyncserver.addHandler( &ws );
@@ -285,7 +311,6 @@ static void initialize( void ) {
     ASSERT( MDNS.begin( wificlient_get_hostname() ), MODULE_NAME " start mDNS service failed" );
     MDNS.addService( "http", "tcp", 80 );
     MDNS.addService( "ftp", "tcp", 21 );
-
 }
 
 void asyncwebserver_set_menu_entry( const char *filename, const char *entry ) {

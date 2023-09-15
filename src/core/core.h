@@ -9,10 +9,16 @@
  * 
  */
 #pragma once
+    #include <core/utils/callback.h>
     /**
      * @brief watchdog timeout in seconds
      */
     #define WDT_TIMEOUT 60
+    /**
+     * @brief webserver callback event mask
+     */
+    #define CORE_ENTER_CRITICAL          _BV(0)      /** @brief event mask for powermgm wakeup */
+    #define CORE_EXIT_CRITICAL           _BV(1)      /** @brief event mask for powermgm wakeup */
     /**
      * @brief core autocall type definition
      */
@@ -25,10 +31,66 @@
         size_t prio;                            /** @brief priority of the callback function */
     } core_autocall_table_t;
     /**
-     * @brief autocall function for setup all modules
+     * @brief autocall function for module setup
+     * 
+     * @param function          pointer to the module registration function
+     * @param prio              priority of the module
      */
     int core_autocall_function( CORE_AUTOCALL_FUNC function, size_t prio );
-        /**
+    /**
+     * @brief register an externel callbackfunction
+     *
+     * @param event             event mask
+     * @param callback_func     pointer to a callback function
+     * @param id                id for the callback
+     * @param active            callback function is activated
+     * @param prio              order to call cb functions, see utils/callback.h
+     * @return true             if success
+     * @return false            if failed
+     */
+    bool core_register_callback_with_prio( EventBits_t event, CALLBACK_FUNC callback_func, const char *id, bool active, callback_prio_t prio );
+    /**
+     * @brief set the callback active state
+     * 
+     * @param callback_func     pointer to the callback function
+     * @param active            callback function is activated
+     * @return true             if success
+     * @return false            if failed
+     */
+    bool core_set_callback_active( CALLBACK_FUNC callback_func, bool active );
+    /**
+     * @brief register an enter critical callback function
+     * 
+     * @param callback_func     pointer to the callback function
+     * @param id                id for the callback
+     * @return true             if success
+     * @return false            if failed
+     */
+    bool core_register_enter_critical_function( CALLBACK_FUNC callback_func, const char *id );
+    /**
+     * @brief register an exit critical callback function
+     * 
+     * @param callback_func     pointer to the callback function
+     * @param id                id for the callback
+     * @return true             if success
+     * @return false            if failed
+     */
+    bool core_register_exit_critical_function( CALLBACK_FUNC callback_func, const char *id );
+    /**
+     * @brief call all enter critical callback functions
+     * 
+     * @return true             if success
+     * @return false            if failed
+     */
+    bool core_enter_critical( void );
+    /**
+     * @brief call all exit critical callback functions
+     * 
+     * @return true             if success
+     * @return false            if failed
+     */
+    bool core_exit_critical( void );
+    /**
      * @brief core setup
      */
     void core_setup( void );
@@ -74,6 +136,12 @@
         "    </div>\n"
         "  </div>\n"
     #endif
+        "  <h2>restart ESP32</h2>\n"
+        "  <div class=\"vbox\">\n"
+        "    <div class=\"box\">\n"        
+        "       <button type='button' onclick='sendCMD(\"core_reset\");' class='button'>reset</button>"
+        "    </div>\n"
+        "  </div>\n"
         "</div>\n"
         "<br>\n"
         "<br>\n"

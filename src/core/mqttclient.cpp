@@ -456,7 +456,9 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              * check all commands
              */
             if ( !strcmp( "save_" MODULE_NAME "_settings", cmd ) ) {
+                core_enter_critical();
                 mqtt_config.save();
+                core_exit_critical();
                 mqttClient.disconnect();
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
@@ -516,11 +518,15 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             retval = true;
             break;
         case SAVE_CONFIG:
+            core_enter_critical();
             mqtt_config.save();
+            core_exit_critical();
             retval = true;
             break;
         case RESET_CONFIG:
+            core_enter_critical();
             mqtt_config.resetToDefault();
+            core_exit_critical();
             retval = true;
             break;
     }
@@ -528,6 +534,8 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
 }
 
 void mqtt_client_save_settings( void ) {
+    core_enter_critical();
     mqtt_config.save();
+    core_exit_critical();
     mqttClient.disconnect();
 }

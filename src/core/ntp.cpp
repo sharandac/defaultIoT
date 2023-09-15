@@ -196,11 +196,15 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             retval = true;
             break;
         case SAVE_CONFIG:
+            core_enter_critical(); 
             ntp_config.save();
+            core_exit_critical();
             retval = true;
             break;
         case RESET_CONFIG:
+            core_enter_critical(); 
             ntp_config.resetToDefault();
+            core_exit_critical();
             retval = true;
             break;
     }

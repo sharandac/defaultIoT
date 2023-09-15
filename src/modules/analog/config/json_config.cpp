@@ -21,7 +21,7 @@ bool CLASS_NAME_T::onSave(JsonDocument& doc) {
      * crawl through all servos and check if the pin is valid
      */
     for( size_t i = 0 ; i < count && i < MAX_ANALOG; i++ ) {
-        doc["analog"][i]["enaled"] = device[i].enaled;
+        doc["analog"][i]["enable"] = device[i].enable;
         doc["analog"][i]["pin"] = device[i].pin;
         doc["analog"][i]["id"] = device[i].id;
         doc["analog"][i]["trigger_low"] = device[i].trigger_low;
@@ -30,10 +30,10 @@ bool CLASS_NAME_T::onSave(JsonDocument& doc) {
         /**
          * check if the pin is valid
          */
-        if( device[i].pin <= 0 || device[i].pin >= 40 )
-            device[i].enaled = false;
+        if( ( device[i].pin >= 32 && device[i].pin <= 36 ) || device[i].pin == 39 )
+            device[i].enable = true;
         else
-            device[i].enaled = true;
+            device[i].enable = false;
     }
     /**
      * save the mqtt settings
@@ -53,7 +53,7 @@ bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
      * crawl through all servos and check if the pin is valid
      */
     for( size_t i = 0 ; i < count && i < MAX_ANALOG ; i++ ) {
-        device[i].enaled = doc["analog"][i]["enaled"] | false;
+        device[i].enable = doc["analog"][i]["enable"] | false;
         device[i].pin = doc["analog"][i]["pin"] | 0;
         strncpy( device[i].id, doc["analog"][i]["id"] | "analog", sizeof( device[i].id ) );
         device[i].trigger_low = doc["analog"][i]["trigger_low"] | 0;
@@ -62,8 +62,10 @@ bool CLASS_NAME_T::onLoad(JsonDocument& doc) {
         /**
          * check if the pin is valid
          */
-        if( device[i].pin <= 0 || device[i].pin >= 40 )
-            device[i].enaled = false;
+        if( ( device[i].pin >= 32 && device[i].pin <= 36 ) || device[i].pin == 39 )
+            device[i].enable = true;
+        else
+            device[i].enable = false;
     }
     /**
      * load the mqtt settings

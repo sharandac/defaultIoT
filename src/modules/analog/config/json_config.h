@@ -28,7 +28,7 @@
              * @brief servo pin config structure
              */
             typedef struct {
-                bool enaled = false;                            /** @brief defines if the analog pin config is enabled */     
+                bool enable = false;                            /** @brief defines if the analog pin config is enabled */     
                 int pin = -1;                                   /** @brief defines the analog pin */
                 char id[ MAX_LENGTH ] = "";                     /** @brief defines the id of the analog pin */
                 int value = 0;                                  /** @brief defines the value of the analog pin */

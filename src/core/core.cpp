@@ -36,6 +36,7 @@ core_config_t core_config;                          /** @brief core config struc
 esp_pm_config_esp32_t pm_config;                    /** @brief power management config structure */
 size_t core_autocall_counter = 0;                   /** @brief counter for registered setup functions */
 core_autocall_table_t *core_autocall_table = NULL;  /** @brief table for registered setup functions */
+callback_t *core_callback = NULL;                   /** @brief callback structure for core module */
 /**
  * local callback functions with local scope
  */
@@ -66,6 +67,42 @@ int core_autocall_function( CORE_AUTOCALL_FUNC function, size_t prio ) {
     core_autocall_table[ core_autocall_counter - 1 ].prio = prio;
     
     return( 1 );
+}
+
+bool core_register_callback_with_prio( EventBits_t event, CALLBACK_FUNC callback_func, const char *id, bool active, callback_prio_t prio ) {
+    if ( core_callback == NULL ) {
+        core_callback = callback_init( "core callbacks" );
+        ASSERT( core_callback,"core callback alloc failed" );
+    }    
+    callback_register_with_prio( core_callback, event, callback_func, id, prio );
+    return( core_set_callback_active( callback_func, false ) );
+}
+
+bool core_register_enter_critical_function( CALLBACK_FUNC callback_func, const char *id ) {
+    if ( core_callback == NULL ) {
+        core_callback = callback_init( "core callbacks" );
+        ASSERT( core_callback,"core callback alloc failed" );
+    }    
+    return( callback_register_with_prio( core_callback, CORE_ENTER_CRITICAL, callback_func, id, CALL_CB_ENTER_CRITICAL ) );
+}
+bool core_register_exit_critical_function( CALLBACK_FUNC callback_func, const char *id ) {
+    if ( core_callback == NULL ) {
+        core_callback = callback_init( "core callbacks" );
+        ASSERT( core_callback,"core callback alloc failed" );
+    }    
+    return( callback_register_with_prio( core_callback, CORE_EXIT_CRITICAL, callback_func, id, CALL_CB_EXIT_CRITICAL ) );
+}
+
+bool core_set_callback_active( CALLBACK_FUNC callback_func, bool active ) {
+    return( callback_set_active( core_callback, callback_func, active ) );
+}
+
+bool core_enter_critical( void ) {
+    return( callback_send( core_callback, CORE_ENTER_CRITICAL, NULL ) );
+}
+
+bool core_exit_critical( void ) {
+    return( callback_send( core_callback, CORE_EXIT_CRITICAL, NULL ) );
 }
 
 void core_setup( void ) {
@@ -195,7 +232,9 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              * save config
              */
             if ( !strcmp( "save_" MODULE_NAME "_settings", cmd ) ) {
+                core_enter_critical();
                 core_config.save();
+                core_exit_critical();
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
             /**
@@ -248,6 +287,12 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
                 core_config.light_sleep = atoi( value ) ? true : false;
                 asyncwebserver_send_websocket_msg( "checkbox\\" MODULE_NAME "_light_sleep\\%s", core_config.light_sleep ? "true" : "false" );
             }
+            /**
+             * reset esp32
+             */
+            else if ( !strcmp ( MODULE_NAME "_reset", cmd ) ) {
+                ESP.restart();
+            }
             retval = true;
             break;
         case WEB_DATA:
@@ -270,14 +315,18 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             /**
              * save config
              */
+            core_enter_critical();
             core_config.save();
+            core_exit_critical();
             retval = true;
             break;
         case RESET_CONFIG:
             /**
              * reset config
              */
+            core_enter_critical();
             core_config.resetToDefault();
+            core_exit_critical();
             retval = true;
             break;  
     }

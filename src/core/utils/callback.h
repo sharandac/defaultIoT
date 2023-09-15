@@ -29,11 +29,13 @@
      */
     typedef enum {
         CALL_CB_NUM_START = 0,              /** @brief enum only for enum counting */
+        CALL_CB_ENTER_CRITICAL,             /** @brief system critical callback */
         CALL_CB_FIRST,                      /** @brief highest prio level */
         CALL_CB_MIDDLE,                     /** @brief middle prio level */
         CALL_CB_MODUL,                      /** @brief modules prio level */
         CALL_CB_CORE,                       /** @brief core prio level */
         CALL_CB_LAST,                       /** @brief lowest prio level */
+        CALL_CB_EXIT_CRITICAL,              /** @brief system callback end */
         CALL_CB_NUM                         /** @brief enum only for enum counting */
     } callback_prio_t;
     /**

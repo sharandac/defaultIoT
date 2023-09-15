@@ -6,19 +6,15 @@
  * @date 2023-03-02
  * 
  * @copyright Copyright (c) 2023
- * 
  */
-#ifndef _CONFIG_H
-    #define _CONFIG_H
-
+#pragma once
     #define DEVICE_NAME             "defaultIoT"
     /*
      * firmewareversion string
      */
-    #define __FIRMWARE__            "2023041301"
+    #define __FIRMWARE__            "2023091501"
     /*
      * default wifi credentials, makes first start easier
      */
     #define WIFI_SSID               ""
     #define WIFI_PASSWORD           ""
-#endif // _CONFIG_H

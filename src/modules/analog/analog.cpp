@@ -70,7 +70,7 @@ static bool initialize( EventBits_t event, void *arg ) {
      * hardware initialization
      */
     for( size_t i = 0 ; i < analog_config.count && i < MAX_ANALOG; i++ ) {
-        if( analog_config.device[i].enaled ) {
+        if( analog_config.device[i].enable ) {
             pinMode( analog_config.device[i].pin, INPUT );
         }
     }
@@ -103,7 +103,7 @@ static bool deinitialize( EventBits_t event, void *arg ) {
      * hardware deinitialization
      */
     for( size_t i = 0 ; i < analog_config.count && i < MAX_ANALOG; i++ ) {
-        if( analog_config.device[i].enaled ) {
+        if( analog_config.device[i].enable ) {
             pinMode( analog_config.device[i].pin, INPUT );
         }
     }
@@ -136,7 +136,7 @@ static bool loop( EventBits_t event, void *arg ) {
         NextMillis = millis() + 100l;
 
         for( size_t i = 0 ; i < analog_config.count && i < MAX_ANALOG; i++ ) {
-            if( analog_config.device[i].enaled ) {
+            if( analog_config.device[i].enable ) {
                 /**
                  * read analog value
                  */
@@ -266,7 +266,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              */
             else if ( !strcmp( "get_" MODULE_NAME "_status", cmd ) ) {
                 for( size_t i = 0 ; i < analog_config.count && i < MAX_ANALOG; i++ ) {
-                    if( analog_config.device[i].enaled ) {
+                    if( analog_config.device[i].enable ) {
                         asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_value\\%d, min %d, max %d", i, analog_config.device[ i ].value, analog_config.device[ i ].analog_min, analog_config.device[ i ].analog_max );
                         asyncwebserver_send_websocket_msg( MODULE_NAME "_%d_trigger_count\\%d", i, analog_config.device[ i ].trigger_count );
                     }

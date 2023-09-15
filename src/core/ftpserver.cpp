@@ -148,7 +148,9 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              * check all commands
              */
             if ( !strcmp( "save_" MODULE_NAME "_settings", wsData->cmd ) ) {
+                core_enter_critical(); 
                 ftpserver_config.save();
+                core_exit_critical(); 
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
             else if ( !strcmp("get_" MODULE_NAME "_settings", wsData->cmd ) ) {
@@ -189,11 +191,15 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             retval = true;
             break;
         case SAVE_CONFIG:
+            core_enter_critical(); 
             ftpserver_config.save();
+            core_exit_critical(); 
             retval = true;
             break;
         case RESET_CONFIG:
+            core_enter_critical(); 
             ftpserver_config.resetToDefault();
+            core_exit_critical(); 
             retval = true;
             break;
     }

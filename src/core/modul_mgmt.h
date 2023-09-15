@@ -56,7 +56,7 @@
      */
     bool module_mgmt_register( CALLBACK_FUNC init_func, CALLBACK_FUNC deinit_func, CALLBACK_FUNC loop_func, const char *id );
     /**
-     * @brief input config page
+     * @brief module config page
      */
     static const char module_mgmt_config_page_head[] =
         "<h2>modul settings</h2>\n"

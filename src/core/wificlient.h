@@ -10,6 +10,7 @@
  */
 #pragma once
 
+    #include "config.h"
     #define WLAN_CONNECT_TIMEOUT    15      /* connection timeout */
     /**
      * @brief get the hostname
@@ -56,6 +57,7 @@
         "    <div class=\"box\">\n"
         "      <input type='text' size='32' id='wifi_password'>\n"
         "    </div>\n"
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 0, 0)
         "  </div>\n"
         "  <div class=\"vbox\">\n"
         "    <input type=\"checkbox\" id=\"wifi_low_power\" ><label for=\"wifi_low_power\"> enable low power radio</label>\n"
@@ -72,6 +74,7 @@
         "      <input type='text' size='32' id='wifi_softap_ssid'>\n"
         "    </div>\n"
         "  </div>\n"
+    #endif
         "  <div class=\"vbox\">\n"
         "    <label>SoftAP Password</label><br>\n"
         "    <div class=\"box\">\n"
@@ -134,4 +137,5 @@
      * @brief wificlient info page
      */
     static const char wificlient_info_config_page[] =
+        "<br><center>firmware: " __FIRMWARE__ ", " __DATE__ " " __TIME__ ", GCC-Version: " __VERSION__ "</center>\n"
         "<br><center>&copy; 2023 / Dirk Bro&szlig;wick / Email: dirk.brosswick@googlemail.com</center>";

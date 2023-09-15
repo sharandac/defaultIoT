@@ -419,22 +419,22 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
              */
             if( doc.containsKey(  MODULE_NAME "_channel") ) {
                 int channel = doc[ MODULE_NAME "_channel"];
-                if( servo_config.device[ channel ].enaled ) {
-                    if( doc.containsKey("angle") && channel >= 0 && channel < MAX_SERVOS ) {
+                if( servo_config.device[ channel ].enaled  && channel >= 0 && channel < MAX_SERVOS ) {
+                    if( doc.containsKey("angle") ) {
                         servo_config.device[ channel ].destination_angle = doc["angle"];
                     }
-                    else if( doc.containsKey("value") && channel >= 0 && channel < MAX_SERVOS ) {
+                    else if( doc.containsKey("value") ) {
                         servo_config.device[ channel ].current_value = doc["value"];
                         servo_config.device[ channel ].destination_angle = ( ( servo_config.device[ channel ].max_angle - servo_config.device[ channel ].min_angle ) * ( servo_config.device[ channel ].current_value - servo_config.device[ channel ].min_value ) ) / ( servo_config.device[ channel ].max_value - servo_config.device[ channel ].min_value );
                     }
-                    else if( doc.containsKey("min") && channel >= 0 && channel < MAX_SERVOS ) {
+                    else if( doc.containsKey("min") ) {
                         servo_config.device[ channel ].destination_angle = servo_config.device[ channel ].min_angle;
                         if( servo_config.device[ channel ].state ) {
                             servo_config.device[ channel ].state = false;
                             servo_config.save();
                         }
                     }
-                    else if( doc.containsKey("max") && channel >= 0 && channel < MAX_SERVOS ) {
+                    else if( doc.containsKey("max") ) {
                         servo_config.device[ channel ].destination_angle = servo_config.device[ channel ].max_angle;
                         if( !servo_config.device[ channel ].state ) {
                             servo_config.device[ channel ].state = true;
