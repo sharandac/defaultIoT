@@ -152,10 +152,14 @@ static bool loop( EventBits_t event, void *arg ) {
                     /**
                      * limit servo angle
                      */
-                    if( servo_config.device[ i ].destination_angle < servo_config.device[ i ].min_angle )
+                    if( servo_config.device[ i ].destination_angle < servo_config.device[ i ].min_angle ) {
                         servo_config.device[ i ].destination_angle = servo_config.device[ i ].min_angle;
-                    else if( servo_config.device[ i ].destination_angle > servo_config.device[ i ].max_angle )
+                        servo_config.device[ i ].current_value = servo_config.device[ i ].min_value;
+                    }
+                    else if( servo_config.device[ i ].destination_angle > servo_config.device[ i ].max_angle ) {
                         servo_config.device[ i ].destination_angle = servo_config.device[ i ].max_angle;
+                        servo_config.device[ i ].current_value = servo_config.device[ i ].max_value;
+                    }
                     /**
                      * attach servo and move to destination angle
                      */
@@ -422,13 +426,16 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                 if( servo_config.device[ channel ].enaled  && channel >= 0 && channel < MAX_SERVOS ) {
                     if( doc.containsKey("angle") ) {
                         servo_config.device[ channel ].destination_angle = doc["angle"];
+                        servo_config.device[ channel ].current_value = map( servo_config.device[ channel ].destination_angle, servo_config.device[ channel ].min_angle, servo_config.device[ channel ].max_angle, servo_config.device[ channel ].min_value, servo_config.device[ channel ].max_value );
                     }
                     else if( doc.containsKey("value") ) {
                         servo_config.device[ channel ].current_value = doc["value"];
-                        servo_config.device[ channel ].destination_angle = ( ( servo_config.device[ channel ].max_angle - servo_config.device[ channel ].min_angle ) * ( servo_config.device[ channel ].current_value - servo_config.device[ channel ].min_value ) ) / ( servo_config.device[ channel ].max_value - servo_config.device[ channel ].min_value );
+                        servo_config.device[ channel ].destination_angle = map( servo_config.device[ channel ].current_value, servo_config.device[ channel ].min_value, servo_config.device[ channel ].max_value, servo_config.device[ channel ].min_angle, servo_config.device[ channel ].max_angle );
+//                        servo_config.device[ channel ].destination_angle = ( ( servo_config.device[ channel ].max_angle - servo_config.device[ channel ].min_angle ) * ( servo_config.device[ channel ].current_value - servo_config.device[ channel ].min_value ) ) / ( servo_config.device[ channel ].max_value - servo_config.device[ channel ].min_value );
                     }
                     else if( doc.containsKey("min") ) {
                         servo_config.device[ channel ].destination_angle = servo_config.device[ channel ].min_angle;
+                        servo_config.device[ channel ].current_value = servo_config.device[ channel ].min_value;
                         if( servo_config.device[ channel ].state ) {
                             servo_config.device[ channel ].state = false;
                             servo_config.save();
@@ -436,6 +443,7 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                     }
                     else if( doc.containsKey("max") ) {
                         servo_config.device[ channel ].destination_angle = servo_config.device[ channel ].max_angle;
+                        servo_config.device[ channel ].current_value = servo_config.device[ channel ].max_value;
                         if( !servo_config.device[ channel ].state ) {
                             servo_config.device[ channel ].state = true;
                             servo_config.save();

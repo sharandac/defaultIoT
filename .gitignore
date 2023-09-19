@@ -5,3 +5,4 @@ defaultIoT.spiffs.bin
 gen_firmware.sh
 update_firmware.sh
 update_spiffs.sh
+firmware.bin
