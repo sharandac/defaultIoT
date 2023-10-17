@@ -369,7 +369,7 @@ static void Task( void * pvParameters ) {
          */
         if ( NextWifiMillis < millis() ) {
             NextWifiMillis += 1000l;
-            if ( WiFi.status() == WL_CONNECTED && !mqttClient.connected() ) {
+            if ( WiFi.status() == WL_CONNECTED && !mqttClient.connected() && strlen( mqtt_config.server ) ) {
                 mqttClient.setServer( mqtt_config.server , mqtt_config.port );
                 mqttClient.setClientId( wificlient_get_hostname_unique() );
                 mqttClient.setCredentials( mqtt_config.username, mqtt_config.password );

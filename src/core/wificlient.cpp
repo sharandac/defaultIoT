@@ -53,6 +53,10 @@ static void registration( void ) {
      */
     wificlient_config.load();
     /**
+     * print hostname
+     */
+    log_i( "hostname: %s", wificlient_get_hostname() );
+    /**
      * set wifi mode to STA
      */
     WiFi.mode( WIFI_STA );

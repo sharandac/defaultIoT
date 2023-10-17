@@ -69,6 +69,17 @@ int core_autocall_function( CORE_AUTOCALL_FUNC function, size_t prio ) {
     return( 1 );
 }
 
+/**
+ * @brief register a callback function with prio
+ * 
+ * @param event             event mask
+ * @param callback_func     pointer to a callback function
+ * @param id                id for the callback
+ * @param active            callback function is activated
+ * @param prio              order to call cb functions, see utils/callback.h
+ * @return true 
+ * @return false 
+ */
 bool core_register_callback_with_prio( EventBits_t event, CALLBACK_FUNC callback_func, const char *id, bool active, callback_prio_t prio ) {
     if ( core_callback == NULL ) {
         core_callback = callback_init( "core callbacks" );
@@ -78,6 +89,14 @@ bool core_register_callback_with_prio( EventBits_t event, CALLBACK_FUNC callback
     return( core_set_callback_active( callback_func, false ) );
 }
 
+/**
+ * @brief register a callback function for enter critical section
+ * 
+ * @param callback_func 
+ * @param id 
+ * @return true 
+ * @return false 
+ */
 bool core_register_enter_critical_function( CALLBACK_FUNC callback_func, const char *id ) {
     if ( core_callback == NULL ) {
         core_callback = callback_init( "core callbacks" );
@@ -85,6 +104,15 @@ bool core_register_enter_critical_function( CALLBACK_FUNC callback_func, const c
     }    
     return( callback_register_with_prio( core_callback, CORE_ENTER_CRITICAL, callback_func, id, CALL_CB_ENTER_CRITICAL ) );
 }
+
+/**
+ * @brief register a callback function for exit critical section
+ * 
+ * @param callback_func 
+ * @param id 
+ * @return true 
+ * @return false 
+ */
 bool core_register_exit_critical_function( CALLBACK_FUNC callback_func, const char *id ) {
     if ( core_callback == NULL ) {
         core_callback = callback_init( "core callbacks" );
@@ -93,18 +121,45 @@ bool core_register_exit_critical_function( CALLBACK_FUNC callback_func, const ch
     return( callback_register_with_prio( core_callback, CORE_EXIT_CRITICAL, callback_func, id, CALL_CB_EXIT_CRITICAL ) );
 }
 
+/**
+ * @brief set a callback function active
+ * 
+ * @param callback_func     pointer to the callback function
+ * @param active            true for active, false for inactive
+ * @return true 
+ * @return false 
+ */
 bool core_set_callback_active( CALLBACK_FUNC callback_func, bool active ) {
     return( callback_set_active( core_callback, callback_func, active ) );
 }
 
+/**
+ * @brief enter critical section
+ * 
+ * @return true 
+ * @return false 
+ */
 bool core_enter_critical( void ) {
+    if( core_callback == NULL )
+        return( false );
     return( callback_send( core_callback, CORE_ENTER_CRITICAL, NULL ) );
 }
 
+/**
+ * @brief exit critical section
+ * 
+ * @return true 
+ * @return false 
+ */
 bool core_exit_critical( void ) {
+    if( core_callback == NULL )
+        return( false );
     return( callback_send( core_callback, CORE_EXIT_CRITICAL, NULL ) );
 }
 
+/**
+ * @brief core setup function
+ */
 void core_setup( void ) {
     /**
      * check if already initialized
@@ -114,6 +169,7 @@ void core_setup( void ) {
      * start serial
      */
     Serial.begin( 115200 );
+    log_i("start core module");
     /**
      * mount SPIFFS
      */
@@ -135,15 +191,33 @@ void core_setup( void ) {
         WRITE_PERI_REG( RTC_CNTL_BROWN_OUT_REG, 0 );
         log_i( "brown out detection disabled");
     }
-    /**
-     * register webserver callback function
+    /*
+     * enable watchdog
      */
-    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/index.htm", CALL_CB_FIRST );
-    asyncwebserver_set_cb_active( webserver_cb, true );
+    if( core_config.watchdog ) {
+        esp_task_wdt_init( WDT_TIMEOUT, true );
+        esp_task_wdt_add( NULL );
+        log_i("watchdog enabled");
+    }
     /**
-     * set cpu frequency
+     * set frequency scaling if enabled
      */
-    setCpuFrequencyMhz( core_config.frequency );
+    if( core_config.frequency < 80 )
+        core_config.frequency = 80;
+    #if CONFIG_PM_ENABLE
+        pm_config.max_freq_mhz = core_config.frequency;
+        pm_config.min_freq_mhz = core_config.frequency_scaling ? 40 : core_config.frequency;
+        pm_config.light_sleep_enable = core_config.light_sleep ? true : false ;
+        ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
+        log_i( "custom arduino-esp32 framework detected, enable PM/DFS support, %d/%dMHz with light sleep %s", pm_config.max_freq_mhz, pm_config.min_freq_mhz, core_config.light_sleep ? "enabled" : "disabled" );
+    #else
+        setCpuFrequencyMhz( core_config.frequency );
+    #endif
+    /**
+     * set initialized flag
+     */
+    initialized = true;
+    log_i( MODULE_NAME " module initialized, start autocall functions");
     /**
      * start core servies
      */
@@ -164,35 +238,11 @@ void core_setup( void ) {
         free( core_autocall_table );
         core_autocall_table = NULL;
     }
-    /*
-     * enable watchdog
-     */
-    if( core_config.watchdog ) {
-        esp_task_wdt_init( WDT_TIMEOUT, true );
-        esp_task_wdt_add( NULL );
-        log_i("watchdog enabled");
-    }
     /**
-     * set frequency scaling if enabled
+     * register webserver callback function
      */
-    #if CONFIG_PM_ENABLE
-        if( core_config.frequency_scaling ) {
-            pm_config.max_freq_mhz = core_config.frequency;
-            pm_config.min_freq_mhz = 40;
-            pm_config.light_sleep_enable = core_config.light_sleep ? true : false ;
-            ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
-            log_i( "custom arduino-esp32 framework detected, enable PM/DFS support, %d/%dMHz with light sleep %s", pm_config.max_freq_mhz, pm_config.min_freq_mhz, core_config.light_sleep ? "enabled" : "disabled" );
-        }
-    #endif
-    /**
-     * print hostname
-     */
-    log_i( "hostname: %s", wificlient_get_hostname() );
-    /**
-     * set initialized flag
-     */
-    initialized = true;
-    log_i( MODULE_NAME " module initialized");
+    asyncwebserver_register_cb_with_prio( WS_DATA | WEB_DATA | WEB_MENU | SAVE_CONFIG | RESET_CONFIG, webserver_cb, "/index.htm", CALL_CB_FIRST );
+    asyncwebserver_set_cb_active( webserver_cb, true );
 }
 /**
  * @brief reset the watchdog
@@ -241,6 +291,7 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              * check get status command
              */
             else if ( !strcmp( "get_" MODULE_NAME "_status", cmd ) ) {
+                asyncwebserver_send_websocket_msg( "no core staus" );
             }
             /**
              * check get settings command
@@ -258,6 +309,13 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             else if ( !strcmp ( MODULE_NAME "_frequency", cmd ) ) {
                 core_config.frequency = atoi( value );
                 asyncwebserver_send_websocket_msg( MODULE_NAME "_frequency\\%d", core_config.frequency );
+                #if CONFIG_PM_ENABLE
+                    pm_config.max_freq_mhz = core_config.frequency;
+                    ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
+                    log_i( "custom arduino-esp32 framework detected, enable PM/DFS support, %d/%dMHz with light sleep %s", pm_config.max_freq_mhz, pm_config.min_freq_mhz, core_config.light_sleep ? "enabled" : "disabled" );
+                #else
+                    setCpuFrequencyMhz( core_config.frequency );
+                #endif
             }
             /**
              * set brownout detection
@@ -279,6 +337,14 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             else if ( !strcmp ( MODULE_NAME "_frequency_scaling", cmd ) ) {
                 core_config.frequency_scaling = atoi( value ) ? true : false;
                 asyncwebserver_send_websocket_msg( "checkbox\\" MODULE_NAME "_frequency_scaling\\%s", core_config.frequency_scaling ? "true" : "false" );
+                #if CONFIG_PM_ENABLE
+                    pm_config.min_freq_mhz = core_config.frequency_scaling ? 40 : pm_config.max_freq_mhz;
+                    pm_config.light_sleep_enable = core_config.light_sleep ? true : false ;
+                    ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
+                    log_i( "custom arduino-esp32 framework detected, enable PM/DFS support, %d/%dMHz with light sleep %s", pm_config.max_freq_mhz, pm_config.min_freq_mhz, core_config.light_sleep ? "enabled" : "disabled" );
+                #else
+                    setCpuFrequencyMhz( core_config.frequency );
+                #endif
             }
             /**
              * senable/disable light sleep
@@ -286,6 +352,13 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             else if ( !strcmp ( MODULE_NAME "_light_sleep", cmd ) ) {
                 core_config.light_sleep = atoi( value ) ? true : false;
                 asyncwebserver_send_websocket_msg( "checkbox\\" MODULE_NAME "_light_sleep\\%s", core_config.light_sleep ? "true" : "false" );
+                #if CONFIG_PM_ENABLE
+                    pm_config.light_sleep_enable = core_config.light_sleep ? true : false ;
+                    ESP_ERROR_CHECK( esp_pm_configure(&pm_config) );
+                    log_i( "custom arduino-esp32 framework detected, enable PM/DFS support, %d/%dMHz with light sleep %s", pm_config.max_freq_mhz, pm_config.min_freq_mhz, core_config.light_sleep ? "enabled" : "disabled" );
+                #else
+                    setCpuFrequencyMhz( core_config.frequency );
+                #endif
             }
             /**
              * reset esp32
