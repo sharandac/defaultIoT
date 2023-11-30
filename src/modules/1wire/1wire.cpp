@@ -176,7 +176,6 @@ static bool deinitialize( EventBits_t event, void *arg ) {
  */
 static bool loop( EventBits_t event, void *arg ) {
     static uint64_t NextMillis = millis();
-    static uint64_t NextTempMillis = 0;
     /**
      * check if module is initialized
      */
@@ -193,17 +192,6 @@ static bool loop( EventBits_t event, void *arg ) {
          */
         NextMillis = millis() + onewire_config.interval * 1000l;
         /**
-         * request new sensor data and set NextTempMillis time to get temperature in 1s
-         */
-        sensors.requestTemperatures();
-        NextTempMillis = millis() + 1000l;
-    }
-    /**
-     * loop to get temperature when NextTempMillis is reached AND NextTempMillis is not 0
-     */
-    if( NextTempMillis < millis() && NextTempMillis != 0 ) {
-        NextTempMillis = 0;
-        /**
          * get new sensor data
          */
         for( size_t i = 0 ; i < sensorcount && i < MAX_SENSORS; i++ ) {
@@ -219,6 +207,10 @@ static bool loop( EventBits_t event, void *arg ) {
                 tempsensor[ i ].temp_str = String( tempsensor[ i ].temp ) + "°" + String( onewire_config.reportInFahrenheit ? "F" : "C" );
             }
         }
+        /**
+         * request new sensor data and set NextTempMillis time to get temperature in 1s
+         */
+        sensors.requestTemperatures();
     }
     /**
      * return success
