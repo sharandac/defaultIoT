@@ -45,6 +45,22 @@
      */
     void module_mgmt_call_loop( void );
     /**
+     * @brief check if a module exist by id
+     * 
+     * @param event     event group to check
+     * @param id        id of the module
+     * @return true     module exist
+     * @return false    module not exist
+     */
+    bool module_mgmt_exist_by_id( EventBits_t event, const char *id );
+    /**
+     * @brief call a module by id and send a event
+     * 
+     * @param event         event to send
+     * @param id            id of the module
+     */
+    void module_mgmt_call_by_id( EventBits_t event, const char *id );
+    /**
      * @brief register a module
      * 
      * @param init_func         init function

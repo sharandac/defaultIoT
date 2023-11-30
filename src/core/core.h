@@ -110,7 +110,7 @@
         "  <div class=\"vbox\">\n"
         "    <label>cpu frequency</label><br>\n"
         "    <div class=\"box\">\n"        
-        "      <select id='core_frequency'><option value='240'>240Mhz</option><option value='160'>160Mhz</option><option value='80'>80Mhz</option></select>"
+        "      <select id='core_frequency'><option value='240'>240MHz</option><option value='160'>160MHz</option><option value='80'>80MHz</option></select>"
         "    </div>\n"
         "  </div>\n"
         "  <div class=\"vbox\">\n"

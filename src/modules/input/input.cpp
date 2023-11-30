@@ -249,7 +249,7 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
                     doc[ MODULE_NAME ]["pin"][ i ]["pin"] = input_config.device[ i ].pin;
                     doc[ MODULE_NAME ]["pin"][ i ]["id"] = input_config.device[ i ].id;
                     doc[ MODULE_NAME ]["pin"][ i ]["state"] = ( 1 << i ) & input_state ? true : false;
-            }
+                }
             }
             retval = true;
             break;

@@ -9,8 +9,7 @@
  * 
  */
 #include <Arduino.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
+#include <Wire.h>
 
 #include "config.h"
 #include "core/webserver.h"
@@ -18,20 +17,16 @@
 #include "core/modul_mgmt.h"
 #include "core/utils/alloc.h"
 
-#include "1wire.h"
-#include "config/onewire_config.h"
+#include "i2c.h"
+#include "config/i2c_config.h"
 /**
  * module namespace
  */
-#define MODULE_NAME                "onewire"
+#define MODULE_NAME                "i2c"
 /**
  * local variables
  */
-OneWire oneWire;
-DallasTemperature sensors( &oneWire );
-temp_sensors_t *tempsensor = NULL;
-static int sensorcount = 0;
-onewire_config_t onewire_config;
+i2c_config_t i2c_config;
 static bool initialized = false;
 /**
  * local callback functions with local scope
@@ -72,6 +67,7 @@ static void registration( void ) {
  * @return false        init was not successfull
  */
 static bool initialize( EventBits_t event, void *arg ) {
+    int scan_hit = 0;
     /**
      * check if already initialized
      */
@@ -79,37 +75,19 @@ static bool initialize( EventBits_t event, void *arg ) {
     /**
      *  load config
      */
-    onewire_config.load();
+    i2c_config.load();
     /**
-     * init sensors and get all sensors and store thair address
+     * init wire interface and scan
      */
-    tempsensor = (temp_sensors_t *)CALLOC_ASSERT( sizeof( temp_sensors_t ), MAX_SENSORS, "onewire calloac failed" );
-    oneWire.begin( onewire_config.pin );
-    /**
-     * search for sensors
-     */
-    while( oneWire.search( tempsensor[ sensorcount ].addr ) && sensorcount < MAX_SENSORS )
-        sensorcount++;
-    /**
-     * request temperature
-     */
-    oneWire.reset_search();
-    delay(250);
-    sensors.requestTemperatures();
-    delay(250);
-    /**
-     * print all sensors
-     */
-    for( int i = 0 ; i < sensorcount && i < MAX_SENSORS; i++ ) {
-        tempsensor[ i ].addr_str = String( tempsensor[ i ].addr[ 5 ], HEX ) + ":";
-        tempsensor[ i ].addr_str += String( tempsensor[ i ].addr[ 4 ], HEX ) + ":";
-        tempsensor[ i ].addr_str += String( tempsensor[ i ].addr[ 3 ], HEX ) + ":";
-        tempsensor[ i ].addr_str += String( tempsensor[ i ].addr[ 2 ], HEX ) + ":";
-        tempsensor[ i ].addr_str += String( tempsensor[ i ].addr[ 1 ], HEX ) + ":";
-        tempsensor[ i ].addr_str += String( tempsensor[ i ].addr[ 0 ], HEX );
-        tempsensor[ i ].temp = onewire_config.reportInFahrenheit ? sensors.getTempF( tempsensor[ i ].addr ) : sensors.getTempC( tempsensor[ i ].addr );
-        tempsensor[ i ].temp_str = String( tempsensor[ i ].temp ) + "°" + ( onewire_config.reportInFahrenheit ? "F" : "C" );
+    Wire.begin( i2c_config.sda, i2c_config.scl, i2c_config.frequency * 1000ul  );
+    for( int i = 0; i < 0x7f; i++ ) {
+        Wire.beginTransmission( i );
+        if( !Wire.endTransmission() ) {
+            scan_hit++;
+            log_i("device found at %x", i );
+        }
     }
+    log_i("scan i2c done, found %d devices", scan_hit );
     /**
      * set webserver and mqtt client callback function active
      */
@@ -119,7 +97,7 @@ static bool initialize( EventBits_t event, void *arg ) {
      * set initialized flag
      */
     initialized = true;
-    log_i( MODULE_NAME " module initialized, found %d sensors", sensorcount );
+    log_i( MODULE_NAME " module initialized" );
     /**
      * return success
      */
@@ -145,11 +123,7 @@ static bool deinitialize( EventBits_t event, void *arg ) {
     /**
      *  save config
      */
-    onewire_config.save();
-    /**
-     *  deinitialize your hardware
-     */
-    pinMode( onewire_config.pin, INPUT );
+    i2c_config.save();
     /**
      * set webserver and mqtt client callback function inactive
      */
@@ -176,7 +150,6 @@ static bool deinitialize( EventBits_t event, void *arg ) {
  */
 static bool loop( EventBits_t event, void *arg ) {
     static uint64_t NextMillis = millis();
-    static uint64_t NextTempMillis = 0;
     /**
      * check if module is initialized
      */
@@ -191,34 +164,7 @@ static bool loop( EventBits_t event, void *arg ) {
         /**
          * reset NextMillis time to run loop in 60s
          */
-        NextMillis = millis() + onewire_config.interval * 1000l;
-        /**
-         * request new sensor data and set NextTempMillis time to get temperature in 1s
-         */
-        sensors.requestTemperatures();
-        NextTempMillis = millis() + 1000l;
-    }
-    /**
-     * loop to get temperature when NextTempMillis is reached AND NextTempMillis is not 0
-     */
-    if( NextTempMillis < millis() && NextTempMillis != 0 ) {
-        NextTempMillis = 0;
-        /**
-         * get new sensor data
-         */
-        for( size_t i = 0 ; i < sensorcount && i < MAX_SENSORS; i++ ) {
-            /**
-             * get temperature
-             */
-            float temp = onewire_config.reportInFahrenheit ? sensors.getTempF( tempsensor[ i ].addr ) : sensors.getTempC( tempsensor[ i ].addr );
-            /**
-             * store temp and convert to string
-             */
-            if( abs( temp - tempsensor[ i ].temp ) < 5.0f ) {
-                tempsensor[ i ].temp = temp;
-                tempsensor[ i ].temp_str = String( tempsensor[ i ].temp ) + "°" + String( onewire_config.reportInFahrenheit ? "F" : "C" );
-            }
-        }
+        NextMillis = millis() + 1000l;
     }
     /**
      * return success
@@ -254,56 +200,67 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              * check for SAV command
              */
             if ( !strcmp( "save_" MODULE_NAME "_settings", cmd ) ) {
-                onewire_config.save();
+                i2c_config.save();
                 asyncwebserver_send_websocket_msg( "status\\Save" );
             }
             /**
              * check get status command
              */
             else if ( !strcmp("get_" MODULE_NAME "_status", cmd ) ) {
-                for( size_t i = 0 ; i < sensorcount && MAX_SENSORS; i++ ) {
-                    asyncwebserver_send_websocket_msg( MODULE_NAME "_sensor_%d\\%s", i, tempsensor[ i ].temp_str.c_str() );
-                }
             }
             /**
              * check get settings command
              */
             else if ( !strcmp("get_" MODULE_NAME "_settings", cmd ) ) {
-                asyncwebserver_send_websocket_msg( MODULE_NAME "_pin\\%d", onewire_config.pin );
-                asyncwebserver_send_websocket_msg( MODULE_NAME "_interval\\%d", onewire_config.interval );
-                asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_stat\\%s", onewire_config.mqtt_msg_stat ? "true" : "false " );
-                for( int i = 0 ; i < sensorcount && i < MAX_SENSORS; i++ )
-                    asyncwebserver_send_websocket_msg( MODULE_NAME "_sensor_%d\\%s", i, tempsensor[ i ].temp_str.c_str() );
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_frequency\\%d", i2c_config.frequency );
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_scl\\%d", i2c_config.scl );
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_sda\\%d", i2c_config.sda );
+                asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_stat\\%s", i2c_config.mqtt_msg_stat ? "true" : "false " );
+            }
+            /**
+             * set cpu frequency
+             */
+            else if ( !strcmp ( MODULE_NAME "_frequency", cmd ) ) {
+                i2c_config.frequency = atoi( value );
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_frequency\\%d", i2c_config.frequency );
             }
             /**
              * store and set pin
              */
-            else if ( !strcmp( MODULE_NAME "_pin", cmd ) ) {
-                onewire_config.pin = atoi( value );
-                asyncwebserver_send_websocket_msg( MODULE_NAME "_pin\\%d", onewire_config.pin );
+            else if ( !strcmp( MODULE_NAME "_scl", cmd ) ) {
+                i2c_config.scl = atoi( value );
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_scl\\%d", i2c_config.scl );
             }
             /**
-             * store and set temp read interval
+             * store and set pin
              */
-            else if ( !strcmp( MODULE_NAME "_interval", cmd ) ) {
-                onewire_config.interval = atoi( value );
-                asyncwebserver_send_websocket_msg( MODULE_NAME "_interval\\%d", onewire_config.interval );
+            else if ( !strcmp( MODULE_NAME "_sda", cmd ) ) {
+                i2c_config.sda = atoi( value );
+                asyncwebserver_send_websocket_msg( MODULE_NAME "_sda\\%d", i2c_config.sda );
             }
             /**
              * store and set mqtt_msg_stat
              */
             else if ( !strcmp ( MODULE_NAME "_mqtt_msg_stat", cmd ) ) {
-                onewire_config.mqtt_msg_stat = atoi( value ) ? true : false;
-                asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_stat\\%s", onewire_config.mqtt_msg_stat ? "true" : "false " );
+                i2c_config.mqtt_msg_stat = atoi( value ) ? true : false;
+                asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_mqtt_msg_stat\\%s", i2c_config.mqtt_msg_stat ? "true" : "false " );
             }
             /**
-             * store and set report_in_fahrenheit
+             * if i2c config valid and enabled, init i2c
              */
-            else if ( !strcmp( MODULE_NAME "_report_in_fahrenheit", cmd ) ) {
-                onewire_config.reportInFahrenheit = atoi( value ) ? true : false;
-                asyncwebserver_send_websocket_msg("checkbox\\" MODULE_NAME "_report_in_fahrenheit\\%s", onewire_config.reportInFahrenheit ? "true" : "false " );
-                for( int i = 0 ; i < sensorcount && i < MAX_SENSORS; i++ )
-                    asyncwebserver_send_websocket_msg( MODULE_NAME "_sensor_%d\\%s", i, tempsensor[ i ].temp_str.c_str() );
+            else if ( !strcmp( MODULE_NAME "_reinit", cmd ) ) {
+                if( i2c_config.enabled ) {
+                    int scan_hit = 0;
+                    Wire.begin( i2c_config.sda, i2c_config.scl, i2c_config.frequency * 1000ul  );
+                    for( int i = 0; i < 0x7f; i++ ) {
+                        Wire.beginTransmission( i );
+                        if( !Wire.endTransmission() ) {
+                            scan_hit++;
+                            log_i("device found at %x", i );
+                        }
+                    }
+                    log_i("scan i2c done, found %d devices", scan_hit );                
+                }
             }
             retval = true;
             break;
@@ -314,16 +271,8 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
              */
             html = html_header;
             html += asyncwebserver_get_menu();
-            html += onewire_config_head;
-            html += "  <h2>sensor data</h2>\n"
-                    "  <div class='vbox'>\n"
-                    "    <div class='box'>\n";
-            for( size_t i = 0 ; i < sensorcount && i < MAX_SENSORS ; i++ ) {
-                html += "      <label>sensor " + String( i ) + " [" + String( tempsensor[i].addr_str ) + "]</label><input type='text' size='32' id='" + MODULE_NAME + "_sensor_" + String( i ) + "' value='" + String( tempsensor[ i ].temp_str ) + "' disabled>\n";
-            }
-            html += "    </div>\n"
-                    "  </div>\n";
-            html += onewire_config_footer;
+            html += i2c_config_head;
+            html += i2c_config_footer;
             html += html_footer;
             request->send(200, "text/html", html);
             retval = true;
@@ -336,14 +285,14 @@ static bool webserver_cb( EventBits_t event, void *arg ) {
             /**
              * save config
              */
-            onewire_config.save();
+            i2c_config.save();
             retval = true;
             break;
         case RESET_CONFIG:
             /**
              * reset config
              */
-            onewire_config.resetToDefault();
+            i2c_config.resetToDefault();
             retval = true;
             break;  
     }
@@ -371,14 +320,12 @@ static bool mqttclient_cb( EventBits_t event, void *arg ) {
              */
             ASSERT( mqttData->doc, MODULE_NAME " mqttstat json data is NULL" );
             /**
-             * send sensor data
+             * insert input state data
              */
-            for( size_t i = 0 ; i < sensorcount; i++ ) {
-                doc["sensor"][ i ]["addr"] = tempsensor[ i ].addr_str;
-                doc["sensor"][ i ]["temp"] = tempsensor[ i ].temp;
-                doc["sensor"][ i ]["temp_str"] = tempsensor[ i ].temp_str;
-            }
-
+            doc[ MODULE_NAME ]["enabled"] = i2c_config.enabled;
+            doc[ MODULE_NAME ]["frequency"] = i2c_config.frequency;
+            doc[ MODULE_NAME ]["pin"]["scl"] = i2c_config.scl;
+            doc[ MODULE_NAME ]["pin"]["sda"] = i2c_config.sda;
             retval = true;
             break;
         case MQTTCMND_JSON_DATA:

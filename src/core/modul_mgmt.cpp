@@ -35,7 +35,6 @@ module_autocall_table_t *module_autocall_table = NULL;  /** @brief table for the
  * local static funtions
  */
 static void module_setup( void );
-static void module_mgmt_call_by_id( EventBits_t event, const char *id );
 static bool webserver_cb( EventBits_t event, void *arg );
 /**
  * @brief register a module via autocall function
@@ -124,7 +123,7 @@ void module_mgmt_call_loop( void ) {
  * @param event         event to send
  * @param id            id of the module
  */
-static void module_mgmt_call_by_id( EventBits_t event, const char *id ) {
+void module_mgmt_call_by_id( EventBits_t event, const char *id ) {
     /**
      * check if all callback tables are initialized and id is set
      */
@@ -145,16 +144,65 @@ static void module_mgmt_call_by_id( EventBits_t event, const char *id ) {
             temp_cb = module_loop_callback;
             break;
         default:
-            return;
+            goto err;
     }
     /**
      * search for the id and call the callback function
      */
     for( size_t i = 0 ; i < temp_cb->entrys ; i++ ) {
-        if( !strcmp( id, temp_cb->table[i].id ) && temp_cb->table[ i ].active ) {
-            temp_cb->table[i].callback_func( event, NULL );
+        if( !strcmp( id, temp_cb->table[ i ].id ) && temp_cb->table[ i ].active && temp_cb->table[ i ].callback_func ) {
+            temp_cb->table[ i ].callback_func( event, NULL );
         }
     }
+
+    err:
+    return;
+}
+
+/**
+ * @brief check if a module exist by id
+ * 
+ * @param event     event group to check
+ * @param id        id of the module
+ * @return true     module exist
+ * @return false    module not exist
+ */
+bool module_mgmt_exist_by_id( EventBits_t event, const char *id ) {
+    /**
+     * check if all callback tables are initialized and id is set
+     */
+    if( !module_init_callback && !module_deinit_callback && !module_loop_callback && !id )
+        return( false );
+    /**
+     * get callback tabled depend on event
+     */
+    callback_t *temp_cb = NULL;
+    switch( event ) {
+        case MODULE_MGMT_INIT:
+            temp_cb = module_init_callback;
+            break;
+        case MODULE_MGMT_DEINIT:
+            temp_cb = module_deinit_callback;
+            break;
+        case MODULE_MGMT_LOOP:
+            temp_cb = module_loop_callback;
+            break;
+        default:
+            goto err;
+    }
+    /**
+     * search for the id and call the callback function
+     */
+    for( size_t i = 0 ; i < temp_cb->entrys ; i++ ) {
+        if( !strcmp( id, temp_cb->table[ i ].id ) && temp_cb->table[ i ].active && temp_cb->table[ i ].callback_func ) {
+            return( true );
+        }
+    }
+    /**
+     * not found
+     */
+    err:
+    return( false );
 }
 
 bool module_mgmt_register( CALLBACK_FUNC init_func, CALLBACK_FUNC deinit_func, CALLBACK_FUNC loop_func, const char *id ) {

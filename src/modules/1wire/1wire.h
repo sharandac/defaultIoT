@@ -15,6 +15,7 @@
     typedef struct {
         bool valid;                 // true if sensor is valid
         unsigned char addr[8];      // sensor address
+        String addr_str;            // sensor address
         float temp = 0.0f;          // temperature
         String temp_str;            // temperature as string
     } temp_sensors_t;
