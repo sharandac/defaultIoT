@@ -202,10 +202,8 @@ static bool loop( EventBits_t event, void *arg ) {
             /**
              * store temp and convert to string
              */
-            if( abs( temp - tempsensor[ i ].temp ) < 5.0f ) {
-                tempsensor[ i ].temp = temp;
-                tempsensor[ i ].temp_str = String( tempsensor[ i ].temp ) + "°" + String( onewire_config.reportInFahrenheit ? "F" : "C" );
-            }
+            tempsensor[ i ].temp = temp;
+            tempsensor[ i ].temp_str = String( tempsensor[ i ].temp ) + "°" + String( onewire_config.reportInFahrenheit ? "F" : "C" );
         }
         /**
          * request new sensor data and set NextTempMillis time to get temperature in 1s
